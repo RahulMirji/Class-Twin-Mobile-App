@@ -1,0 +1,49 @@
+name: class_twin
+description: "ClassTwin — Hybrid Classroom Streaming Student App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Supabase
+  supabase_flutter: ^2.8.4
+  
+  # State Management
+  flutter_riverpod: ^2.6.1
+  
+  # Routing
+  go_router: ^14.8.1
+  
+  # Local Storage
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.5.3
+  
+  # Streaming
+  livekit_client: ^2.4.3
+  
+  # UI & Design
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.2
+  shimmer: ^3.0.0
+  phosphor_flutter: ^2.1.0
+  
+  # Utilities
+  uuid: ^4.5.1
+  connectivity_plus: ^6.1.4
+  intl: ^0.19.0
+  
+  # Error Tracking
+  sentry_flutter: ^8.14.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
