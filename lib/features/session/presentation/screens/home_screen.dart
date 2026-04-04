@@ -176,7 +176,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // Bottom branding
                       Center(
                         child: Text(
-                          'The Digital Atelier',
+                          'ClassTwin',
                           style: AppTheme.labelSmall.copyWith(
                             color: AppTheme.textTertiary.withValues(alpha: 0.5),
                             letterSpacing: 2,

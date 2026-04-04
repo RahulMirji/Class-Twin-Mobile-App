@@ -3,13 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme.dart';
-import '../../../../core/demo_data.dart';
 import '../../domain/models/student.dart';
 import '../../domain/session_state.dart';
 import '../providers/session_provider.dart';
 
 /// WaitingScreen — Between questions / after response
-/// Remote students get chat + hand raise access
 class WaitingScreen extends ConsumerWidget {
   const WaitingScreen({super.key});
 
@@ -18,13 +16,13 @@ class WaitingScreen extends ConsumerWidget {
     final sessionState = ref.watch(sessionStateProvider);
     final mode = ref.watch(studentModeProvider);
 
-    SessionWaiting state;
-    if (sessionState is SessionWaiting) {
-      state = sessionState;
-    } else {
-      // Demo mode fallback
-      state = DemoData.waitingState;
+    if (sessionState is! SessionWaiting) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
+
+    final state = sessionState;
 
     return Scaffold(
       body: SafeArea(
@@ -95,12 +93,6 @@ class WaitingScreen extends ConsumerWidget {
                                 label: 'Chat',
                                 onTap: () {
                                   // Open chat panel
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (_) => const SizedBox(), // ChatPanel
-                                  );
                                 },
                               ),
                             ),

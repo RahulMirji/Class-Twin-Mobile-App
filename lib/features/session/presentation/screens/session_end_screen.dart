@@ -4,7 +4,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme.dart';
-import '../../../../core/demo_data.dart';
 import '../../domain/models/session.dart';
 import '../../domain/session_state.dart';
 import '../providers/session_provider.dart';
@@ -20,10 +19,15 @@ class SessionEndScreen extends ConsumerWidget {
     Session? session;
     if (sessionState is SessionEnded) {
       session = sessionState.session;
-    } else {
-      // Demo mode fallback
-      session = DemoData.session;
     }
+
+    if (session == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final s = session;
 
     return Scaffold(
       body: SafeArea(
@@ -70,31 +74,29 @@ class SessionEndScreen extends ConsumerWidget {
                         textAlign: TextAlign.center,
                       ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
 
-                      if (session != null) ...[
-                        const SizedBox(height: 32),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: AppTheme.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                session.topic,
-                                style: AppTheme.titleMedium,
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${session.totalRounds} rounds completed',
-                                style: AppTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ).animate().fadeIn(delay: 600.ms, duration: 600.ms),
-                      ],
+                      const SizedBox(height: 32),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              s.topic,
+                              style: AppTheme.titleMedium,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${s.totalRounds} rounds completed',
+                              style: AppTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ).animate().fadeIn(delay: 600.ms, duration: 600.ms),
 
                       const Spacer(flex: 3),
 

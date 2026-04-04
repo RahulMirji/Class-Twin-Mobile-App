@@ -3,14 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme.dart';
-import '../../../../core/demo_data.dart';
 import '../../domain/models/session.dart';
 import '../../domain/models/student.dart';
 import '../../domain/session_state.dart';
 import '../providers/session_provider.dart';
 
 /// LobbyScreen — Waiting for session to start
-/// Remote students see "Stream starting soon" state
 class LobbyScreen extends ConsumerWidget {
   const LobbyScreen({super.key});
 
@@ -25,10 +23,15 @@ class LobbyScreen extends ConsumerWidget {
       session = sessionState.session;
     } else if (sessionState is SessionStreamPending) {
       session = sessionState.session;
-    } else {
-      // Demo mode fallback
-      session = DemoData.session;
     }
+
+    if (session == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final s = session;
 
     return Scaffold(
       body: SafeArea(
@@ -84,48 +87,47 @@ class LobbyScreen extends ConsumerWidget {
                       const SizedBox(height: 40),
 
                       // Session info card
-                      if (session != null)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: AppTheme.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Session Topic',
-                                style: AppTheme.labelSmall.copyWith(
-                                  letterSpacing: 1,
-                                  color: AppTheme.textTertiary,
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Session Topic',
+                              style: AppTheme.labelSmall.copyWith(
+                                letterSpacing: 1,
+                                color: AppTheme.textTertiary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              s.topic,
+                              style: AppTheme.headlineMedium,
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                _InfoChip(
+                                  icon: PhosphorIconsRegular.listNumbers,
+                                  label: '${s.totalRounds} rounds',
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                session.topic,
-                                style: AppTheme.headlineMedium,
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  _InfoChip(
-                                    icon: PhosphorIconsRegular.listNumbers,
-                                    label: '${session.totalRounds} rounds',
-                                  ),
-                                  const SizedBox(width: 12),
-                                  _InfoChip(
-                                    icon: isRemote
-                                        ? PhosphorIconsRegular.monitor
-                                        : PhosphorIconsRegular.mapPin,
-                                    label: isRemote ? 'Remote' : 'In Room',
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
+                                const SizedBox(width: 12),
+                                _InfoChip(
+                                  icon: isRemote
+                                      ? PhosphorIconsRegular.monitor
+                                      : PhosphorIconsRegular.mapPin,
+                                  label: isRemote ? 'Remote' : 'In Room',
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
 
                       const Spacer(flex: 3),
 

@@ -72,16 +72,6 @@ class DashboardScreen extends ConsumerWidget {
                             style: AppTheme.displayMedium,
                           ),
                         ),
-                        IconButton(
-                          onPressed: () async {
-                            await ref.read(authStateProvider.notifier).signOut();
-                            if (context.mounted) {
-                              context.go('/onboarding');
-                            }
-                          },
-                          icon: Icon(PhosphorIconsBold.signOut, color: AppTheme.error),
-                          tooltip: 'Logout',
-                        ),
                       ],
                     ),
                     const SizedBox(height: 8),

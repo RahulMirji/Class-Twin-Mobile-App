@@ -48,9 +48,9 @@ class MainLayout extends StatelessWidget {
             label: 'Leaderboard',
           ),
           NavigationDestination(
-            icon: Icon(PhosphorIconsRegular.presentation),
-            selectedIcon: Icon(PhosphorIconsFill.presentation),
-            label: 'Classroom',
+            icon: Icon(PhosphorIconsRegular.user),
+            selectedIcon: Icon(PhosphorIconsFill.user),
+            label: 'Profile',
           ),
         ],
       ),

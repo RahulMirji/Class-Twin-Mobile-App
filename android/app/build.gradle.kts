@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.twinclassroom.app"
-    compileSdk = 34
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -38,7 +38,7 @@ android {
     }
 
     signingConfigs {
-        create("debug") {
+        getByName("debug") {
             storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
             storePassword = "android"
             keyAlias = "androiddebugkey"

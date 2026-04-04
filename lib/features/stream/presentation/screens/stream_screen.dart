@@ -189,10 +189,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
   Widget _buildResponseOverlay(SessionStreaming streaming) {
     final question = streaming.currentQuestion!;
     
-    // In demo mode or if options are empty, provide fallback options
-    final options = question.options.isNotEmpty 
-        ? question.options 
-        : ['Option A', 'Option B', 'Option C'];
+    final options = question.options;
 
     return Positioned(
       bottom: 64 + MediaQuery.of(context).padding.bottom,

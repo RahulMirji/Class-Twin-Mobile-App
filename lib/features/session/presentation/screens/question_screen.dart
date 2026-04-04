@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-// import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme.dart';
-import '../../../../core/demo_data.dart';
-// import '../../domain/models/student_response.dart';
 import '../../domain/session_state.dart';
 import '../providers/session_provider.dart';
 
@@ -38,19 +35,18 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionStateProvider);
 
-    // Demo mode fallback
-    final questionState = sessionState is SessionQuestion
-        ? sessionState
-        : DemoData.questionState;
+    if (sessionState is! SessionQuestion) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
+    final questionState = sessionState;
     final question = questionState.question;
     final timeRemaining = questionState.timeRemaining;
     final timeFraction = timeRemaining.inSeconds / question.timeLimitSeconds;
     
-    // In demo mode or if options are empty, provide fallback options
-    final options = question.options.isNotEmpty 
-        ? question.options 
-        : ['Option A', 'Option B', 'Option C'];
+    final options = question.options;
 
     return Scaffold(
       body: SafeArea(
@@ -105,7 +101,6 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                             ...options.asMap().entries.map((entry) {
                               final index = entry.key;
                               final optionText = entry.value;
-                              // Provide a stagger delay depending on the index
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: _ResponseOptionTile(

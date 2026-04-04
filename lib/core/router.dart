@@ -14,6 +14,7 @@ import '../features/stream/presentation/screens/stream_ended_screen.dart';
 import '../features/home/presentation/screens/dashboard_screen.dart';
 import '../features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
+import '../features/profile/presentation/screens/profile_screen.dart';
 import 'presentation/screens/main_layout.dart';
 import 'providers/preferences_provider.dart';
 import 'demo_gallery.dart';
@@ -24,7 +25,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final _shellNavigatorJoinKey = GlobalKey<NavigatorState>(debugLabel: 'join');
 final _shellNavigatorLeaderboardKey = GlobalKey<NavigatorState>(debugLabel: 'leaderboard');
-final _shellNavigatorStreamKey = GlobalKey<NavigatorState>(debugLabel: 'stream');
+final _shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
 
 class RouterNotifier extends ChangeNotifier {
   final Ref ref;
@@ -47,13 +48,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isOnboarding = state.matchedLocation == '/onboarding';
 
       // Redirection logic:
-      // 1. If user has no name AND no active auth session, force onboarding
-      if (studentName == null && authState.value == null && !isOnboarding) {
+      // 1. If user has NO active auth session, force onboarding (login screen)
+      if (authState.value == null && !isOnboarding) {
         return '/onboarding';
       }
 
-      // 2. If user is already set up, don't allow them to stay on onboarding
-      if ((studentName != null || authState.value != null) && isOnboarding) {
+      // 2. If user IS logged in, don't allow them to stay on onboarding
+      if (authState.value != null && isOnboarding) {
         return '/';
       }
 
@@ -82,6 +83,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
+      // Active Session — Full screen overlay
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/session',
+        builder: (context, state) => const _SessionRouter(),
+      ),
+
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainLayout(navigationShell: navigationShell);
@@ -98,7 +106,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Branch 1: Join Code Entry (formerly HomeScreen)
+          // Branch 1: Join Code Entry
           StatefulShellBranch(
             navigatorKey: _shellNavigatorJoinKey,
             routes: [
@@ -120,41 +128,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Branch 3: Active Session View (Stream)
+          // Branch 3: Profile
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorStreamKey,
+            navigatorKey: _shellNavigatorProfileKey,
             routes: [
               GoRoute(
-                path: '/session',
-                builder: (context, state) {
-                  return const _SessionRouter();
-                },
-                routes: [
-                  GoRoute(
-                    path: 'lobby',
-                    builder: (context, state) => const LobbyScreen(),
-                  ),
-                  GoRoute(
-                    path: 'question',
-                    builder: (context, state) => const QuestionScreen(),
-                  ),
-                  GoRoute(
-                    path: 'waiting',
-                    builder: (context, state) => const WaitingScreen(),
-                  ),
-                  GoRoute(
-                    path: 'stream',
-                    builder: (context, state) => const StreamScreen(),
-                  ),
-                  GoRoute(
-                    path: 'stream-ended',
-                    builder: (context, state) => const StreamEndedScreen(),
-                  ),
-                  GoRoute(
-                    path: 'ended',
-                    builder: (context, state) => const SessionEndScreen(),
-                  ),
-                ],
+                path: '/profile',
+                builder: (context, state) => const ProfileScreen(),
               ),
             ],
           ),
