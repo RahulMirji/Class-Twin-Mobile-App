@@ -47,6 +47,13 @@ class SessionRepository {
     return Student.fromJson(response);
   }
 
+  /// Update the manual confidence score of the student
+  Future<void> updateStudentConfidence(String studentId, int score) async {
+    await _client.from('session_students').update({
+      'manual_confidence': score,
+    }).eq('id', studentId);
+  }
+
   /// Get current question for a round
   Future<Question?> getQuestionForRound(
       String sessionId, int roundNumber) async {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:camera/camera.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme.dart';
@@ -10,9 +11,11 @@ import '../../../session/domain/models/student_response.dart';
 import '../../../session/domain/session_state.dart';
 import '../../../session/presentation/providers/session_provider.dart';
 import '../providers/stream_provider.dart';
+import '../../../engagement/presentation/providers/engagement_provider.dart';
 import '../../data/stream_service.dart';
 import 'chat_panel.dart';
 import 'hand_raise_modal.dart';
+import 'widgets/confidence_slider.dart';
 import '../../../../core/providers/system_monitor_provider.dart';
 
 /// StreamScreen — Primary screen for remote students
@@ -105,6 +108,21 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
         wsUrl: tokenResponse.wsUrl,
         token: tokenResponse.token,
       );
+
+      // Start engagement tracking
+      final engagementService = ref.read(engagementServiceProvider);
+      await engagementService.start(
+        sessionId: sessionId,
+        studentId: student.id,
+        getAppMetrics: () {
+          final s = ref.read(currentStudentProvider);
+          return {
+            'device_orientation': MediaQuery.of(context).orientation.name,
+            'network_quality': 'good', // Placeholder for actual network status
+            'confidence_slider': s?.manualConfidence ?? 50, // latest synced slider value
+          };
+        },
+      );
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -120,6 +138,10 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
     _connectionSub?.cancel();
     _cameraSub?.cancel();
     _screenSub?.cancel();
+    
+    // Stop engagement tracking
+    ref.read(engagementServiceProvider).stop();
+    
     super.dispose();
   }
 
@@ -130,6 +152,10 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
     SessionStreaming? streaming;
     if (sessionState is SessionStreaming) {
       streaming = sessionState;
+      // Update engagement tracking round
+      if (streaming.roundNumber != null) {
+        ref.read(engagementServiceProvider).updateRound(streaming.roundNumber!);
+      }
     }
 
     final hasQuestion = streaming?.currentQuestion != null;
@@ -145,10 +171,52 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
             child: _buildStreamView(streaming),
           ),
 
+          // ─── Confidence Slider ───────────────────────────
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 24,
+            right: 24,
+            child: const ConfidenceSlider(),
+          ),
+
+          // ─── Local Student Camera (Engagement) ──────────────
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 84,
+            left: _pipAlignment == Alignment.topRight ? 12 : null,
+            right: _pipAlignment == Alignment.topLeft ? 12 : null,
+            child: ValueListenableBuilder<CameraController?>(
+              valueListenable: ref.read(engagementServiceProvider).cameraControllerNotifier,
+              builder: (context, controller, _) {
+                if (controller == null) return const SizedBox.shrink();
+                return Container(
+                  width: 80,
+                  height: 106,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(7),
+                    // Flip horizontally since it's a front camera
+                    child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.rotationY(3.14159), // math.pi
+                      child: CameraPreview(controller),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
           // ─── PiP Camera ──────────────────────────────
           if (_cameraTrack != null && _screenTrack != null)
             Positioned(
-              top: MediaQuery.of(context).padding.top + 12,
+              top: MediaQuery.of(context).padding.top + 84,
               right: _pipAlignment == Alignment.topRight ? 12 : null,
               left: _pipAlignment == Alignment.topLeft ? 12 : null,
               child: GestureDetector(

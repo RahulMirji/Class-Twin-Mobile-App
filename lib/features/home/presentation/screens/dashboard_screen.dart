@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:go_router/go_router.dart';
-// import 'package:flutter_animate/flutter_animate.dart';
 import 'package:class_twin/core/theme.dart';
 import 'package:class_twin/core/providers/preferences_provider.dart';
 import 'package:class_twin/core/providers/notification_provider.dart';
-import 'package:class_twin/core/providers/auth_provider.dart';
 import 'package:class_twin/features/session/presentation/providers/session_list_provider.dart';
+import 'package:class_twin/features/session/presentation/providers/assignments_provider.dart';
+import 'package:class_twin/features/session/domain/models/remedial_assignment.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -56,77 +56,105 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppTheme.surface,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Welcome Back, $studentName!',
-                            style: AppTheme.displayMedium,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // Use await to satisfy the return type Future<void>
+            await ref.read(activeSessionsProvider.future);
+            await ref.read(upcomingSessionsProvider.future);
+            await ref.read(assignedQuizzesProvider.future);
+          },
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Welcome Back, $studentName!',
+                              style: AppTheme.displayMedium,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Check out your active classes and connect instantly.',
-                      style: AppTheme.bodyLarge.copyWith(color: AppTheme.textSecondary),
-                    ),
-                    const SizedBox(height: 32),
-                    
-                    Text(
-                      'Live Classes',
-                      style: AppTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 16),
-                    activeSessions.when(
-                      data: (sessions) => sessions.isEmpty
-                          ? _buildEmptyState('No live classes at the moment.')
-                          : Column(
-                              children: sessions.map((s) => Column(
-                                children: [
-                                  _sessionCard(context, ref, s, isLive: true),
-                                  const SizedBox(height: 16),
-                                ],
-                              )).toList(),
-                            ),
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (e, _) => Text('Error: $e'),
-                    ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Check out your active classes and connect instantly.',
+                        style: AppTheme.bodyLarge.copyWith(color: AppTheme.textSecondary),
+                      ),
+                      const SizedBox(height: 32),
 
-                    const SizedBox(height: 24),
+                      // --- Remedial Quizzes Section ---
+                      Consumer(builder: (context, ref, child) {
+                        final assignments = ref.watch(assignedQuizzesProvider);
+                        return assignments.when(
+                          data: (List<RemedialAssignment> list) => list.isEmpty
+                              ? const SizedBox.shrink()
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Your Tasks', style: AppTheme.titleLarge),
+                                    const SizedBox(height: 16),
+                                    ...list.map((a) => _remedialCard(context, a)),
+                                    const SizedBox(height: 32),
+                                  ],
+                                ),
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        );
+                      }),
+                      
+                      Text(
+                        'Live Classes',
+                        style: AppTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 16),
+                      activeSessions.when(
+                        data: (sessions) => sessions.isEmpty
+                            ? _buildEmptyState('No live classes at the moment.')
+                            : Column(
+                                children: sessions.map((s) => Column(
+                                  children: [
+                                    _sessionCard(context, ref, s, isLive: true),
+                                    const SizedBox(height: 16),
+                                  ],
+                                )).toList(),
+                              ),
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (e, _) => Text('Error: $e'),
+                      ),
 
-                    Text(
-                      'Upcoming Classes',
-                      style: AppTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 16),
-                    upcomingSessions.when(
-                      data: (sessions) => sessions.isEmpty
-                          ? _buildEmptyState('No upcoming classes scheduled.')
-                          : Column(
-                              children: sessions.map((s) => Column(
-                                children: [
-                                  _sessionCard(context, ref, s, isLive: false),
-                                  const SizedBox(height: 16),
-                                ],
-                              )).toList(),
-                            ),
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (e, _) => Text('Error: $e'),
-                    ),
-                  ],
+                      const SizedBox(height: 24),
+
+                      Text(
+                        'Upcoming Classes',
+                        style: AppTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 16),
+                      upcomingSessions.when(
+                        data: (sessions) => sessions.isEmpty
+                            ? _buildEmptyState('No upcoming classes scheduled.')
+                            : Column(
+                                children: sessions.map((s) => Column(
+                                  children: [
+                                    _sessionCard(context, ref, s, isLive: false),
+                                    const SizedBox(height: 16),
+                                  ],
+                                )).toList(),
+                              ),
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (e, _) => Text('Error: $e'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -231,6 +259,76 @@ class DashboardScreen extends ConsumerWidget {
                 elevation: 0,
               ),
               child: Text(isLive ? 'Join Live Course' : 'Remind Me'),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _remedialCard(BuildContext context, RemedialAssignment assignment) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppTheme.primary, AppTheme.secondary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(PhosphorIconsFill.lightning, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Recommended For You',
+                  style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'AI Personalized Quiz',
+            style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Based on your recent performance. Focused on: ${assignment.weaknessesTargeted.join(', ')}',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () => context.go('/quiz', extra: assignment),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppTheme.primary,
+                elevation: 0,
+              ),
+              child: const Text('Start Quiz Now'),
             ),
           )
         ],

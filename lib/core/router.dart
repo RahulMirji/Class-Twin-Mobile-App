@@ -15,6 +15,8 @@ import '../features/home/presentation/screens/dashboard_screen.dart';
 import '../features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
+import '../features/session/presentation/screens/quiz_screen.dart';
+import '../features/session/domain/models/remedial_assignment.dart';
 import 'presentation/screens/main_layout.dart';
 import 'providers/preferences_provider.dart';
 import 'demo_gallery.dart';
@@ -74,6 +76,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // Join — name + mode selection
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/quiz',
+        builder: (context, state) {
+          final assignment = state.extra as RemedialAssignment;
+          return QuizScreen(assignment: assignment);
+        },
+      ),
+
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/join/:code',

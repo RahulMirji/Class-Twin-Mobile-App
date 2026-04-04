@@ -6,6 +6,7 @@ class Student {
   final String? deviceId;
   final StudentMode mode;
   final DateTime joinedAt;
+  final int manualConfidence;
 
   const Student({
     required this.id,
@@ -14,6 +15,7 @@ class Student {
     this.deviceId,
     required this.mode,
     required this.joinedAt,
+    this.manualConfidence = 50,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,7 @@ class Student {
       deviceId: json['device_id'] as String?,
       mode: StudentMode.fromString(json['mode'] as String),
       joinedAt: DateTime.parse(json['joined_at'] as String),
+      manualConfidence: (json['manual_confidence'] as num?)?.toInt() ?? 50,
     );
   }
 
