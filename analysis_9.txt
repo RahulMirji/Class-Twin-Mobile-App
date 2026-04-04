@@ -1,0 +1,26 @@
+Analyzing Class Twin...                                         
+
+   info - Unnecessary use of multiple underscores - lib\core\demo_gallery.dart:111:39 - unnecessary_underscores
+  error - The class 'gsi.GoogleSignIn' doesn't have an unnamed constructor - lib\core\providers\auth_provider.dart:13:42 - new_with_undefined_constructor_default
+  error - The method 'signIn' isn't defined for the type 'GoogleSignIn' - lib\core\providers\auth_provider.dart:41:46 - undefined_method
+  error - The named parameter 'settings' is required, but there's no corresponding argument - lib\core\providers\notification_provider.dart:26:26 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 1 found - lib\core\providers\notification_provider.dart:27:7 - extra_positional_arguments_could_be_named
+warning - Unused import: 'package:connectivity_plus/connectivity_plus.dart' - lib\core\providers\system_monitor_provider.dart:4:8 - unused_import
+warning - Unused import: 'package:flutter_animate/flutter_animate.dart' - lib\features\home\presentation\screens\dashboard_screen.dart:5:8 - unused_import
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\session\data\session_repository.dart:77:7 - use_null_aware_elements
+warning - The library 'package:supabase_flutter/supabase_flutter.dart' doesn't export a member with the hidden name 'SessionStatus' - lib\features\session\presentation\providers\session_list_provider.dart:2:71 - undefined_hidden_name
+warning - Unused import: '../../domain/models/student_response.dart' - lib\features\session\presentation\providers\session_provider.dart:7:8 - unused_import
+warning - The declaration '_handleSessionStarted' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:203:8 - unused_element
+warning - The declaration '_handleNextQuestion' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:214:8 - unused_element
+warning - The declaration '_handleSessionEnded' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:265:8 - unused_element
+warning - The declaration '_handleResult' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:275:8 - unused_element
+warning - The declaration '_handleStreamStarted' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:279:8 - unused_element
+warning - The declaration '_handleStreamEnded' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:301:8 - unused_element
+warning - Dead code - lib\features\session\presentation\screens\lobby_screen.dart:107:47 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\features\session\presentation\screens\lobby_screen.dart:107:50 - dead_null_aware_expression
+warning - Unused import: 'package:flutter_riverpod/flutter_riverpod.dart' - lib\features\session\presentation\screens\qr_scan_screen.dart:5:8 - unused_import
+warning - Unused import: 'package:phosphor_flutter/phosphor_flutter.dart' - lib\features\session\presentation\screens\question_screen.dart:4:8 - unused_import
+warning - Unused import: '../../domain/models/student_response.dart' - lib\features\session\presentation\screens\question_screen.dart:7:8 - unused_import
+warning - Dead code - lib\features\session\presentation\screens\session_end_screen.dart:85:47 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\features\session\presentation\screens\session_end_screen.dart:85:50 - dead_null_aware_expression
+

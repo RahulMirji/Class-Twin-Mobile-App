@@ -1,0 +1,4 @@
+Analyzing Class Twin...                                         
+
+  error - The class 'GoogleSignIn' doesn't have an unnamed constructor - lib\core\providers\auth_provider.dart:15:33 - new_with_undefined_constructor_default
+

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme.dart';
 
 class QRScanScreen extends StatefulWidget {
@@ -48,64 +48,69 @@ class _QRScanScreenState extends State<QRScanScreen> {
 
           // 3. UI Layer (Centered Border and Text)
           Positioned.fill(
-            child: Column(
+            child: Stack(
               children: [
-                const Spacer(flex: 2),
-                
-                // Text above the box
-                Text(
-                  'Scan the QR Code to Join',
-                  style: AppTheme.headlineMedium.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ).animate().fadeIn().slideY(begin: 0.2),
-                
-                const SizedBox(height: 32),
-                
-                // The White Border Frame
-                Container(
-                  width: scanAreaSize,
-                  height: scanAreaSize,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.9), 
-                      width: 2.5,
-                    ),
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        blurRadius: 20,
-                        spreadRadius: 2,
+                // The White Border Frame exactly centered
+                Center(
+                  child: Container(
+                    width: scanAreaSize,
+                    height: scanAreaSize,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.9), 
+                        width: 2.5,
                       ),
-                    ],
-                  ),
-                  // Animated scanning line inside? (optional but premium)
-                  child: Stack(
-                    children: [
-                       _ScanningLine(width: scanAreaSize),
-                    ],
+                      borderRadius: BorderRadius.circular(32),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                         _ScanningLine(width: scanAreaSize),
+                      ],
+                    ),
                   ),
                 ),
                 
-                const SizedBox(height: 40),
-                
-                // Helper Instruction
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                // Text above the box
+                Align(
+                  alignment: Alignment.center,
+                  child: Transform.translate(
+                    offset: Offset(0, -(scanAreaSize / 2 + 50)),
+                    child: Text(
+                      'Scan the QR Code to Join',
+                      style: AppTheme.headlineMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ).animate().fadeIn().slideY(begin: 0.2),
                   ),
-                  child: Text(
-                    'Align the code within the frame',
-                    style: AppTheme.labelSmall.copyWith(color: Colors.white.withValues(alpha: 0.6)),
-                  ),
-                ).animate().fadeIn(delay: 400.ms),
+                ),
                 
-                const Spacer(flex: 3),
+                // Helper Instruction below the box
+                Align(
+                  alignment: Alignment.center,
+                  child: Transform.translate(
+                    offset: Offset(0, scanAreaSize / 2 + 50),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                      ),
+                      child: Text(
+                        'Align the code within the frame',
+                        style: AppTheme.labelSmall.copyWith(color: Colors.white.withValues(alpha: 0.6)),
+                      ),
+                    ).animate().fadeIn(delay: 400.ms),
+                  ),
+                ),
               ],
             ),
           ),

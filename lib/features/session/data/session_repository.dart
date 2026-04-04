@@ -74,7 +74,7 @@ class SessionRepository {
       'student_id': studentId,
       'session_id': sessionId,
       'response': response,
-      if (detailText != null) 'detail_text': detailText,
+      'detail_text': detailText,
     }).select().single();
 
     return StudentResponse.fromJson(data);

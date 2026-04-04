@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide Session, SessionStatus;
+import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 import 'package:class_twin/features/session/domain/models/session.dart';
 
 final activeSessionsProvider = StreamProvider<List<Session>>((ref) {

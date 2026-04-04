@@ -46,8 +46,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       }
     } catch (e) {
       if (!mounted) return;
+      final message = e.toString().contains('ApiException: 10')
+          ? 'Google Sign-In is not configured for this device yet.'
+          : 'Sign-in failed. Please try again.';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: $e')),
+        SnackBar(content: Text(message)),
       );
     }
   }

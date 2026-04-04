@@ -1,0 +1,7 @@
+Analyzing Class Twin...                                         
+
+   info - Don't invoke 'print' in production code - check_conflict.dart:5:3 - avoid_print
+   info - Don't invoke 'print' in production code - check_conflict.dart:6:3 - avoid_print
+  error - The class 'GoogleSignIn' doesn't have an unnamed constructor - lib\core\providers\auth_provider.dart:13:38 - new_with_undefined_constructor_default
+  error - The method 'signIn' isn't defined for the type 'GoogleSignIn' - lib\core\providers\auth_provider.dart:39:46 - undefined_method
+

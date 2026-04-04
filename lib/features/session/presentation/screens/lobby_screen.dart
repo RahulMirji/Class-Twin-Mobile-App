@@ -104,7 +104,7 @@ class LobbyScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                session.topic ?? 'No topic set',
+                                session.topic,
                                 style: AppTheme.headlineMedium,
                               ),
                               const SizedBox(height: 16),

@@ -82,7 +82,7 @@ class SessionEndScreen extends ConsumerWidget {
                           child: Column(
                             children: [
                               Text(
-                                session.topic ?? '',
+                                session.topic,
                                 style: AppTheme.titleMedium,
                                 textAlign: TextAlign.center,
                               ),

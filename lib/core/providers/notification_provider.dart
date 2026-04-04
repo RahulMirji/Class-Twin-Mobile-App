@@ -7,10 +7,12 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 final notificationServiceProvider = Provider((ref) => NotificationService());
 
 class NotificationService {
-  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notifications =
+      FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -22,18 +24,16 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    // The error says 'settings' is required.
+    // v21 API: initialize() takes all named params; `settings:` confirmed from source
     await _notifications.initialize(
-      initSettings, // First positional is often initializationSettings
-      // but let's try to use the named one if it fails.
-      // Actually, if it's version 21.0.0, maybe it's just 'settings:'
+      settings: initSettings,
+      onDidReceiveNotificationResponse: (_) {},
     );
-    
-    // Initialize timezone
+
+    // flutter_timezone v5: getLocalTimezone() returns TimezoneInfo — use .identifier
     tz.initializeTimeZones();
-    final dynamic tzData = await FlutterTimezone.getLocalTimezone();
-    final String timeZoneName = tzData is String ? tzData : (tzData as dynamic).name.toString();
-    tz.setLocalLocation(tz.getLocation(timeZoneName));
+    final tzInfo = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
   }
 
   Future<void> scheduleNotification({
@@ -58,9 +58,6 @@ class NotificationService {
         iOS: DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      // androidScheduleMode is correct, but let's check UILocalNotificationDateInterpretation
-      // If it's missing, maybe it's not needed or renamed.
-      // uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 

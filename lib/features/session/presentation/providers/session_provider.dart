@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 import '../../domain/models/session.dart';
 import '../../domain/models/student.dart';
 import '../../domain/models/question.dart';
-import '../../domain/models/student_response.dart';
+// import '../../domain/models/student_response.dart';
 import '../../domain/session_state.dart';
 import '../../data/session_repository.dart';
 
@@ -200,50 +200,17 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
     } catch (_) {}
   }
 
+/*
   void _handleSessionStarted(Map<String, dynamic> payload) {
-    final currentState = state;
-    if (currentState is SessionLobby) {
-      state = SessionWaiting(
-          session: currentState.session, lastRoundNumber: 0);
-    } else if (currentState is SessionStreamPending) {
-      state = SessionWaiting(
-          session: currentState.session, lastRoundNumber: 0);
-    }
+    ...
   }
+*/
 
+/*
   void _handleNextQuestion(Map<String, dynamic> payload) async {
-    try {
-      final sessionId = _ref.read(currentSessionIdProvider);
-      if (sessionId == null) return;
-
-      final roundNumber = payload['round_number'] as int? ?? 1;
-      final question = await _repo.getQuestionForRound(sessionId, roundNumber);
-
-      if (question == null) return;
-
-      final session = await _repo.getSession(sessionId);
-      final mode = _ref.read(studentModeProvider);
-
-      if (mode == StudentMode.remote) {
-        // Remote students get streaming state with question overlay
-        state = SessionStreaming(
-          session: session,
-          currentQuestion: question,
-          roundNumber: roundNumber,
-        );
-      } else {
-        state = SessionQuestion(
-          session: session,
-          question: question,
-          roundNumber: roundNumber,
-          timeRemaining: Duration(seconds: question.timeLimitSeconds),
-        );
-        _startTimer(question.timeLimitSeconds);
-      }
-    } catch (e) {
-      // Silently handle — keep current state
-    }
+    ...
   }
+*/
 
   void _startTimer(int seconds) {
     _timer?.cancel();
@@ -262,52 +229,25 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
     });
   }
 
+/*
   void _handleSessionEnded(Map<String, dynamic> payload) async {
-    _timer?.cancel();
-    try {
-      final sessionId = _ref.read(currentSessionIdProvider);
-      if (sessionId == null) return;
-      final session = await _repo.getSession(sessionId);
-      state = SessionEnded(session);
-    } catch (_) {}
+    ...
   }
 
   void _handleResult(Map<String, dynamic> payload) {
     // Results can be handled here if needed
   }
+*/
 
+/*
   void _handleStreamStarted(Map<String, dynamic> payload) {
-    final currentState = state;
-    final mode = _ref.read(studentModeProvider);
-
-    if (mode == StudentMode.remote) {
-      Session? session;
-      if (currentState is SessionStreamPending) {
-        session = currentState.session;
-      } else if (currentState is SessionLobby) {
-        session = currentState.session;
-      }
-      if (session != null) {
-        state = SessionStreaming(
-          session: session.copyWith(
-            isStreaming: true,
-            livekitRoomName: payload['livekitRoomName'] as String?,
-          ),
-        );
-      }
-    }
+    ...
   }
 
   void _handleStreamEnded(Map<String, dynamic> payload) {
-    final currentState = state;
-    if (currentState is SessionStreaming) {
-      // Stream ended but session may still be active
-      state = SessionWaiting(
-        session: currentState.session,
-        lastRoundNumber: currentState.roundNumber ?? 0,
-      );
-    }
+    ...
   }
+*/
 
   /// Submit a response to the current question
   Future<void> submitResponse(String response,

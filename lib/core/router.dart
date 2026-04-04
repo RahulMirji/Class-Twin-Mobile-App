@@ -26,15 +26,24 @@ final _shellNavigatorJoinKey = GlobalKey<NavigatorState>(debugLabel: 'join');
 final _shellNavigatorLeaderboardKey = GlobalKey<NavigatorState>(debugLabel: 'leaderboard');
 final _shellNavigatorStreamKey = GlobalKey<NavigatorState>(debugLabel: 'stream');
 
+class RouterNotifier extends ChangeNotifier {
+  final Ref ref;
+  RouterNotifier(this.ref) {
+    ref.listen(studentNameProvider, (_, __) => notifyListeners());
+    ref.listen(authStateProvider, (_, __) => notifyListeners());
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  // Watch providers so the router rebuilds/redirects on change
-  final studentName = ref.watch(studentNameProvider);
-  final authState = ref.watch(authStateProvider);
+  final notifier = RouterNotifier(ref);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
+    refreshListenable: notifier,
     initialLocation: '/',
     redirect: (context, state) {
+      final studentName = ref.read(studentNameProvider);
+      final authState = ref.read(authStateProvider);
       final isOnboarding = state.matchedLocation == '/onboarding';
 
       // Redirection logic:
