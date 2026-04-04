@@ -8,7 +8,9 @@ import '../../domain/models/student.dart';
 import '../providers/session_provider.dart';
 import '../../domain/session_state.dart';
 
-/// JoinScreen — Step 1: Name entry, Step 2: Mode selection (conditional)
+import '../../../../core/providers/preferences_provider.dart';
+
+/// JoinScreen — Mode selection
 class JoinScreen extends ConsumerStatefulWidget {
   final String sessionCode;
   const JoinScreen({super.key, required this.sessionCode});
@@ -18,25 +20,12 @@ class JoinScreen extends ConsumerStatefulWidget {
 }
 
 class _JoinScreenState extends ConsumerState<JoinScreen> {
-  final _nameController = TextEditingController();
-  int _step = 1;
   StudentMode? _selectedMode;
   bool _isJoining = false;
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
-
-  void _goToStep2() {
-    if (_nameController.text.trim().isEmpty) return;
-    setState(() => _step = 2);
-  }
-
   void _joinSession() async {
-    final name = _nameController.text.trim();
-    if (name.isEmpty) return;
+    final name = ref.read(studentNameProvider);
+    if (name == null || name.isEmpty) return; // Should not happen with onboarding guard
 
     final mode = _selectedMode ?? StudentMode.inRoom;
 
@@ -69,171 +58,98 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: _step == 1 ? _buildStep1() : _buildStep2(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      IconButton(
+                        onPressed: () => context.go('/'),
+                        icon: Icon(PhosphorIconsBold.caretLeft,
+                            color: AppTheme.textPrimary, size: 22),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      Text(
+                        'How are you joining?',
+                        style: AppTheme.displayMedium,
+                      ).animate().fadeIn(duration: 500.ms),
+
+                      const SizedBox(height: 8),
+                      Text(
+                        'Session Mode',
+                        style: AppTheme.labelMedium.copyWith(color: AppTheme.textTertiary),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // Mode card A: In Room
+                      _ModeCard(
+                        icon: PhosphorIconsBold.mapPin,
+                        title: "I'm in the classroom",
+                        subtitle: 'Sync with local hardware',
+                        isSelected: _selectedMode == StudentMode.inRoom,
+                        onTap: () => setState(() => _selectedMode = StudentMode.inRoom),
+                      ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+
+                      const SizedBox(height: 12),
+
+                      // Mode card B: Remote
+                      _ModeCard(
+                        icon: PhosphorIconsBold.monitor,
+                        title: "I'm joining remotely",
+                        subtitle: 'Virtual learning environment',
+                        badge: 'Requires good WiFi',
+                        isSelected: _selectedMode == StudentMode.remote,
+                        onTap: () => setState(() => _selectedMode = StudentMode.remote),
+                      ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
+
+                      const Spacer(),
+
+                      // Join button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed:
+                              _selectedMode != null && !_isJoining ? _joinSession : null,
+                          child: _isJoining
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppTheme.onPrimary,
+                                  ),
+                                )
+                              : const Text('Continue'),
+                        ),
+                      ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
+
+                      const SizedBox(height: 12),
+                      Center(
+                        child: Text(
+                          'By joining you agree to our terms of conduct',
+                          style: AppTheme.labelSmall,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
-    );
-  }
-
-  Widget _buildStep1() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        IconButton(
-          onPressed: () => context.go('/'),
-          icon: Icon(PhosphorIconsBold.caretLeft,
-              color: AppTheme.textPrimary, size: 22),
-        ),
-        const SizedBox(height: 40),
-
-        // Question
-        Text(
-          "What's your name?",
-          style: AppTheme.displayMedium,
-        ).animate().fadeIn(duration: 500.ms),
-
-        const SizedBox(height: 12),
-        Text(
-          'To personalize your learning journey, we\'d love to know how to address you in our digital atelier.',
-          style: AppTheme.bodyMedium,
-        ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
-
-        const SizedBox(height: 40),
-
-        // Name input
-        TextField(
-          controller: _nameController,
-          textCapitalization: TextCapitalization.words,
-          style: AppTheme.titleLarge,
-          decoration: InputDecoration(
-            hintText: 'Enter your name',
-            hintStyle: AppTheme.titleLarge.copyWith(
-              color: AppTheme.textTertiary.withValues(alpha: 0.5),
-            ),
-          ),
-          onSubmitted: (_) => _goToStep2(),
-        ).animate().fadeIn(delay: 400.ms, duration: 500.ms),
-
-        const Spacer(),
-
-        // Continue button
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: _goToStep2,
-            child: const Text('Continue'),
-          ),
-        ).animate().fadeIn(delay: 600.ms, duration: 500.ms),
-
-        const SizedBox(height: 12),
-
-        Center(
-          child: Text(
-            'By continuing, you agree to our Terms of Service',
-            style: AppTheme.labelSmall,
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-
-  Widget _buildStep2() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            IconButton(
-              onPressed: () => setState(() => _step = 1),
-              icon: Icon(PhosphorIconsBold.caretLeft,
-                  color: AppTheme.textPrimary, size: 22),
-            ),
-            const Spacer(),
-            Text(
-              'Step 2 of 3',
-              style: AppTheme.labelSmall.copyWith(
-                color: AppTheme.textTertiary,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 32),
-
-        Text(
-          'How are you joining?',
-          style: AppTheme.displayMedium,
-        ).animate().fadeIn(duration: 500.ms),
-
-        const SizedBox(height: 8),
-        Text(
-          'Session Mode',
-          style: AppTheme.labelMedium.copyWith(color: AppTheme.textTertiary),
-        ),
-
-        const SizedBox(height: 32),
-
-        // Mode card A: In Room
-        _ModeCard(
-          icon: PhosphorIconsBold.mapPin,
-          title: "I'm in the classroom",
-          subtitle: 'Sync with local hardware',
-          isSelected: _selectedMode == StudentMode.inRoom,
-          onTap: () => setState(() => _selectedMode = StudentMode.inRoom),
-        ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
-
-        const SizedBox(height: 12),
-
-        // Mode card B: Remote
-        _ModeCard(
-          icon: PhosphorIconsBold.monitor,
-          title: "I'm joining remotely",
-          subtitle: 'Virtual learning environment',
-          badge: 'Requires good WiFi',
-          isSelected: _selectedMode == StudentMode.remote,
-          onTap: () => setState(() => _selectedMode = StudentMode.remote),
-        ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
-
-        const Spacer(),
-
-        // Join button
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed:
-                _selectedMode != null && !_isJoining ? _joinSession : null,
-            child: _isJoining
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppTheme.onPrimary,
-                    ),
-                  )
-                : const Text('Continue'),
-          ),
-        ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
-
-        const SizedBox(height: 12),
-        Center(
-          child: Text(
-            'By joining you agree to our terms of conduct',
-            style: AppTheme.labelSmall,
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const SizedBox(height: 24),
-      ],
     );
   }
 }

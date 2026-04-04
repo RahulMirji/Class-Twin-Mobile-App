@@ -3,11 +3,11 @@ class AppConstants {
   AppConstants._();
 
   // Supabase
-  static const String supabaseUrl = 'YOUR_SUPABASE_URL';
-  static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+  static const String supabaseUrl = 'https://woulwfbaejlwlgfbpnqu.supabase.co';
+  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvdWx3ZmJhZWpsd2xnZmJwbnF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyOTI1NzAsImV4cCI6MjA5MDg2ODU3MH0.ERr53qwAFD5Dl48plRAMOQBcrVxai27D2FuwEI47YNA';
 
   // LiveKit
-  static const String livekitWsUrl = 'YOUR_LIVEKIT_WS_URL';
+  static const String livekitWsUrl = 'wss://class-twin-gpmml780.livekit.cloud';
   static const String livekitTokenEndpoint =
       '\$supabaseUrl/functions/v1/livekit-token';
 

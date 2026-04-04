@@ -66,14 +66,14 @@ class SessionRepository {
     required String questionId,
     required String studentId,
     required String sessionId,
-    required ResponseType response,
+    required String response,
     String? detailText,
   }) async {
     final data = await _client.from('student_responses').insert({
       'question_id': questionId,
       'student_id': studentId,
       'session_id': sessionId,
-      'response': response.value,
+      'response': response,
       if (detailText != null) 'detail_text': detailText,
     }).select().single();
 
@@ -88,5 +88,47 @@ class SessionRepository {
   /// Subscribe to session changes via Realtime
   RealtimeChannel subscribeToSession(String sessionId) {
     return _client.channel('session:$sessionId');
+  }
+
+  /// Get Leaderboard (scores based on correct answers)
+  Future<List<Map<String, dynamic>>> getLeaderboard(String sessionId) async {
+    // We join student_responses with questions to check if sr.response == q.correct_option
+    // and join with session_students to get the name
+    final response = await _client
+        .from('student_responses')
+        .select('''
+          student_id,
+          session_students!inner (student_name),
+          questions!inner (correct_option),
+          response
+        ''')
+        .eq('session_id', sessionId);
+
+    // Calculate scores locally for now to handle complex matching logic if needed
+    final scores = <String, Map<String, dynamic>>{};
+
+    for (final row in response as List) {
+      final studentId = row['student_id'] as String;
+      final studentName = row['session_students']['student_name'] as String;
+      final correctOption = row['questions']['correct_option'] as String?;
+      final studentResponse = row['response'] as String;
+
+      if (!scores.containsKey(studentId)) {
+        scores[studentId] = {
+          'name': studentName,
+          'score': 0,
+        };
+      }
+
+      if (correctOption != null && studentResponse == correctOption) {
+        scores[studentId]!['score'] = (scores[studentId]!['score'] as int) + 100; // 100 pts per correct answer
+      }
+    }
+
+    // Convert to list, sort by score desc
+    final leaderboard = scores.values.toList()
+      ..sort((a, b) => (b['score'] as int).compareTo(a['score'] as int));
+
+    return leaderboard;
   }
 }

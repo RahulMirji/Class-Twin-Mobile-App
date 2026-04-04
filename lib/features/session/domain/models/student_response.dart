@@ -4,7 +4,7 @@ class StudentResponse {
   final String questionId;
   final String studentId;
   final String sessionId;
-  final ResponseType response;
+  final String response;
   final String? detailText;
   final DateTime respondedAt;
 
@@ -24,7 +24,7 @@ class StudentResponse {
       questionId: json['question_id'] as String,
       studentId: json['student_id'] as String,
       sessionId: json['session_id'] as String,
-      response: ResponseType.fromString(json['response'] as String),
+      response: json['response'] as String,
       detailText: json['detail_text'] as String?,
       respondedAt: DateTime.parse(json['responded_at'] as String),
     );
@@ -35,30 +35,8 @@ class StudentResponse {
       'question_id': questionId,
       'student_id': studentId,
       'session_id': sessionId,
-      'response': response.value,
+      'response': response,
       if (detailText != null) 'detail_text': detailText,
     };
-  }
-}
-
-enum ResponseType {
-  gotIt('got_it'),
-  somewhat('somewhat'),
-  lost('lost');
-
-  final String value;
-  const ResponseType(this.value);
-
-  static ResponseType fromString(String value) {
-    switch (value) {
-      case 'got_it':
-        return ResponseType.gotIt;
-      case 'somewhat':
-        return ResponseType.somewhat;
-      case 'lost':
-        return ResponseType.lost;
-      default:
-        return ResponseType.gotIt;
-    }
   }
 }

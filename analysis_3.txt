@@ -1,0 +1,43 @@
+Resolving dependencies...
+Downloading packages...
+  battery_plus 6.2.3 (7.0.0 available)
+  characters 1.4.0 (1.4.1 available)
+  connectivity_plus 6.1.5 (7.1.0 available)
+  device_info_plus 11.5.0 (12.4.0 available)
+  flutter_riverpod 2.6.1 (3.3.1 available)
+  flutter_webrtc 1.2.1 (1.4.1 available)
+  go_router 14.8.1 (17.2.0 available)
+  google_fonts 6.3.3 (8.0.2 available)
+  intl 0.19.0 (0.20.2 available)
+  jni 0.14.2 (1.0.0 available)
+  livekit_client 2.5.4 (2.7.0 available)
+  matcher 0.12.17 (0.12.19 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.17.0 (1.18.2 available)
+  mobile_scanner 5.2.3 (7.2.0 available)
+  protobuf 4.2.0 (6.0.0 available)
+  riverpod 2.6.1 (3.2.1 available)
+  test_api 0.7.7 (0.7.11 available)
+  vector_math 2.2.0 (2.3.0 available)
+  win32 5.15.0 (6.0.0 available)
+  win32_registry 2.1.0 (3.0.2 available)
+Got dependencies!
+21 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing Class Twin...                                         
+
+   info - Unnecessary use of multiple underscores - lib\core\demo_gallery.dart:111:39 - unnecessary_underscores
+warning - Unused import: 'package:connectivity_plus/connectivity_plus.dart' - lib\core\providers\system_monitor_provider.dart:4:8 - unused_import
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\session\data\session_repository.dart:77:7 - use_null_aware_elements
+warning - The '!' will have no effect because the receiver can't be null - lib\features\session\presentation\providers\leaderboard_provider.dart:25:45 - unnecessary_non_null_assertion
+warning - Unused import: '../../domain/models/student_response.dart' - lib\features\session\presentation\providers\session_provider.dart:7:8 - unused_import
+warning - The declaration '_handleSessionStarted' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:203:8 - unused_element
+warning - The declaration '_handleNextQuestion' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:214:8 - unused_element
+warning - The declaration '_handleSessionEnded' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:265:8 - unused_element
+warning - The declaration '_handleResult' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:275:8 - unused_element
+warning - The declaration '_handleStreamStarted' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:279:8 - unused_element
+warning - The declaration '_handleStreamEnded' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:301:8 - unused_element
+warning - Unused import: 'package:flutter_riverpod/flutter_riverpod.dart' - lib\features\session\presentation\screens\qr_scan_screen.dart:5:8 - unused_import
+warning - Unused import: 'package:phosphor_flutter/phosphor_flutter.dart' - lib\features\session\presentation\screens\question_screen.dart:4:8 - unused_import
+warning - Unused import: '../../domain/models/student_response.dart' - lib\features\session\presentation\screens\question_screen.dart:7:8 - unused_import
+

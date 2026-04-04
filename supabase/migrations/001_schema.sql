@@ -45,6 +45,8 @@ CREATE TABLE IF NOT EXISTS questions (
   session_id    UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   round_number  INT NOT NULL,
   question_text TEXT NOT NULL,
+  options       JSONB,
+  correct_option TEXT,
   time_limit_seconds INT NOT NULL DEFAULT 30,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -57,8 +59,7 @@ CREATE TABLE IF NOT EXISTS student_responses (
   question_id   UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
   student_id    UUID NOT NULL REFERENCES session_students(id) ON DELETE CASCADE,
   session_id    UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-  response      TEXT NOT NULL
-                  CHECK (response IN ('got_it', 'somewhat', 'lost')),
+  response      TEXT NOT NULL,
   detail_text   TEXT,
   responded_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (question_id, student_id)

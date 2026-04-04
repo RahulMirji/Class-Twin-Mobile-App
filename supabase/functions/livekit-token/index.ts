@@ -1,7 +1,7 @@
 // deno-lint-ignore-file
 // LiveKit Token Edge Function — Deploy to Supabase
 // deno deploy: supabase functions deploy livekit-token
-import { AccessToken } from 'npm:livekit-server-sdk@2.x'
+import { AccessToken } from 'npm:livekit-server-sdk@^2.0.0'
 
 const LIVEKIT_API_KEY = Deno.env.get('LIVEKIT_API_KEY')!
 const LIVEKIT_API_SECRET = Deno.env.get('LIVEKIT_API_SECRET')!

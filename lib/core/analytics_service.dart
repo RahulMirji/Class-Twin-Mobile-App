@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Analytics events from PRD Section 12
 enum AnalyticsEvent {
   // Stream events
@@ -22,14 +24,18 @@ enum AnalyticsEvent {
   // Session events
   sessionJoined,
   sessionLeft,
+  joinFail,
+  streamReconnect,
   responseSubmitted,
   responseUndone,
 }
 
 class AnalyticsService {
+  static final AnalyticsService instance = AnalyticsService._();
+  AnalyticsService._();
+
   void track(AnalyticsEvent event, [Map<String, dynamic>? properties]) {
     // TODO: Integrate with your analytics backend (Mixpanel, Amplitude, etc.)
-    // For now, just log
-    // print('Analytics: ${event.name} ${properties ?? ''}');
+    debugPrint('Analytics: ${event.name} ${properties ?? ''}');
   }
 }

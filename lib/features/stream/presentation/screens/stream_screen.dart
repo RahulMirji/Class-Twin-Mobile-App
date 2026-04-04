@@ -9,6 +9,7 @@ import '../../../session/domain/session_state.dart';
 import '../../../session/presentation/providers/session_provider.dart';
 import 'chat_panel.dart';
 import 'hand_raise_modal.dart';
+import '../../../../core/providers/system_monitor_provider.dart';
 
 /// StreamScreen — Primary screen for remote students
 /// Shows live class feed with response overlay
@@ -105,6 +106,34 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
               child: _buildSubmittedChip(streaming!.submittedResponse!),
             ),
 
+          // ─── System Banners (Battery / Connection) ───
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 60,
+            left: 24,
+            right: 24,
+            child: Consumer(
+              builder: (context, ref, _) {
+                final status = ref.watch(systemMonitorProvider);
+                return Column(
+                  children: [
+                    if (status.isLowBattery)
+                      _SystemBanner(
+                        icon: PhosphorIconsFill.batteryWarning,
+                        message: 'Low battery — connect to power.',
+                        color: AppTheme.error,
+                      ).animate().slideY(begin: -1, end: 0),
+                    if (status.isPoorConnection)
+                      _SystemBanner(
+                        icon: PhosphorIconsFill.wifiSlash,
+                        message: 'Unstable connection detected.',
+                        color: AppTheme.error,
+                      ).animate().slideY(begin: -1, end: 0),
+                  ],
+                );
+              },
+            ),
+          ),
+
           // ─── Bottom Control Bar ───────────────────────
           Positioned(
             bottom: 0,
@@ -159,6 +188,11 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
 
   Widget _buildResponseOverlay(SessionStreaming streaming) {
     final question = streaming.currentQuestion!;
+    
+    // In demo mode or if options are empty, provide fallback options
+    final options = question.options.isNotEmpty 
+        ? question.options 
+        : ['Option A', 'Option B', 'Option C'];
 
     return Positioned(
       bottom: 64 + MediaQuery.of(context).padding.bottom,
@@ -192,24 +226,17 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
 
             const SizedBox(height: 20),
 
-            // Response buttons
-            _StreamResponseButton(
-              label: 'Got It',
-              color: AppTheme.responseGotIt,
-              onTap: () => _submit(ResponseType.gotIt),
-            ),
-            const SizedBox(height: 8),
-            _StreamResponseButton(
-              label: 'Somewhat',
-              color: AppTheme.responseSomewhat,
-              onTap: () => _submit(ResponseType.somewhat),
-            ),
-            const SizedBox(height: 8),
-            _StreamResponseButton(
-              label: 'Lost',
-              color: AppTheme.responseLost,
-              onTap: () => _submit(ResponseType.lost),
-            ),
+            // Response buttons (MCQ)
+            ...options.map((optionText) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: _StreamResponseButton(
+                  label: optionText,
+                  color: AppTheme.outlineVariant, // We don't have static colors anymore
+                  onTap: () => _submit(optionText),
+                ),
+              );
+            }),
 
             const SizedBox(height: 12),
 
@@ -228,22 +255,13 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
     );
   }
 
-  void _submit(ResponseType type) {
-    ref.read(sessionStateProvider.notifier).submitResponse(type);
+  void _submit(String responseText) {
+    ref.read(sessionStateProvider.notifier).submitResponse(responseText);
   }
 
   Widget _buildSubmittedChip(StudentResponse response) {
-    final color = switch (response.response) {
-      ResponseType.gotIt => AppTheme.responseGotIt,
-      ResponseType.somewhat => AppTheme.responseSomewhat,
-      ResponseType.lost => AppTheme.responseLost,
-    };
-
-    final label = switch (response.response) {
-      ResponseType.gotIt => 'Got It ✓',
-      ResponseType.somewhat => 'Somewhat',
-      ResponseType.lost => 'Lost',
-    };
+    final label = response.response;
+    final color = AppTheme.tertiary; // Generic color for selected MCQ
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -342,6 +360,50 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
       context: context,
       barrierColor: Colors.black54,
       builder: (_) => const HandRaiseModal(),
+    );
+  }
+}
+
+class _SystemBanner extends StatelessWidget {
+  final IconData icon;
+  final String message;
+  final Color color;
+
+  const _SystemBanner({
+    required this.icon,
+    required this.message,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.surface.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTheme.labelSmall.copyWith(color: AppTheme.textPrimary),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

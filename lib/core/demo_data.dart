@@ -36,6 +36,7 @@ class DemoData {
     sessionId: 'demo-session-001',
     roundNumber: 2,
     questionText: 'Do you understand back-propagation?',
+    options: ['Got it perfectly', 'I am somewhat lost', 'I need a recap'],
     timeLimitSeconds: 30,
     createdAt: DateTime.now(),
   );
@@ -45,7 +46,7 @@ class DemoData {
     questionId: 'demo-question-001',
     studentId: 'demo-student-001',
     sessionId: 'demo-session-001',
-    response: ResponseType.gotIt,
+    response: 'Got it perfectly',
     respondedAt: DateTime.now(),
   );
 

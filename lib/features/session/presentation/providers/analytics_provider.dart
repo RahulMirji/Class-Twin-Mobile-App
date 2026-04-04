@@ -3,5 +3,5 @@ import '../../../../core/analytics_service.dart';
 
 // ─── Analytics Service Provider ───────────────────────────────
 final analyticsServiceProvider = Provider<AnalyticsService>((ref) {
-  return AnalyticsService();
+  return AnalyticsService.instance;
 });

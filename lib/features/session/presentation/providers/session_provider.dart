@@ -85,34 +85,119 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
   }
 
   void _subscribeToRealtime(String sessionId) {
-    _channel = Supabase.instance.client.channel('session:$sessionId');
+    _channel = Supabase.instance.client.channel('session-changes:$sessionId');
 
+    // Listen for session row updates (status, streaming, round changes)
     _channel!
-        .onBroadcast(
-          event: 'session:started',
-          callback: (payload) => _handleSessionStarted(payload),
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'sessions',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id',
+            value: sessionId,
+          ),
+          callback: (payload) => _handleSessionChange(payload.newRecord),
         )
-        .onBroadcast(
-          event: 'session:next_question',
-          callback: (payload) => _handleNextQuestion(payload),
-        )
-        .onBroadcast(
-          event: 'session:ended',
-          callback: (payload) => _handleSessionEnded(payload),
-        )
-        .onBroadcast(
-          event: 'session:result',
-          callback: (payload) => _handleResult(payload),
-        )
-        .onBroadcast(
-          event: 'stream:started',
-          callback: (payload) => _handleStreamStarted(payload),
-        )
-        .onBroadcast(
-          event: 'stream:ended',
-          callback: (payload) => _handleStreamEnded(payload),
+        // Listen for new questions being inserted
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'questions',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'session_id',
+            value: sessionId,
+          ),
+          callback: (payload) => _handleNewQuestion(payload.newRecord),
         )
         .subscribe();
+  }
+
+  void _handleSessionChange(Map<String, dynamic> record) async {
+    final newStatus = record['status'] as String?;
+    final currentRound = record['current_round'] as int? ?? 0;
+    final isStreaming = record['is_streaming'] as bool? ?? false;
+    final mode = _ref.read(studentModeProvider);
+    final sessionId = _ref.read(currentSessionIdProvider);
+    if (sessionId == null) return;
+
+    try {
+      final session = await _repo.getSession(sessionId);
+
+      if (newStatus == 'ended') {
+        _timer?.cancel();
+        state = SessionEnded(session);
+        return;
+      }
+
+      if (newStatus == 'active' && currentRound > 0) {
+        // A new round has started — fetch the question
+        final question = await _repo.getQuestionForRound(sessionId, currentRound);
+        if (question != null) {
+          if (mode == StudentMode.remote && isStreaming) {
+            state = SessionStreaming(
+              session: session,
+              currentQuestion: question,
+              roundNumber: currentRound,
+            );
+          } else {
+            state = SessionQuestion(
+              session: session,
+              question: question,
+              roundNumber: currentRound,
+              timeRemaining: Duration(seconds: question.timeLimitSeconds),
+            );
+            _startTimer(question.timeLimitSeconds);
+          }
+        }
+      } else if (newStatus == 'active') {
+        // Session started but no question yet
+        final currentState = state;
+        if (currentState is SessionLobby || currentState is SessionStreamPending) {
+          state = SessionWaiting(session: session, lastRoundNumber: 0);
+        }
+      }
+
+      // Handle streaming state changes
+      if (isStreaming && mode == StudentMode.remote) {
+        final currentState = state;
+        if (currentState is SessionStreamPending || currentState is SessionLobby) {
+          state = SessionStreaming(session: session);
+        }
+      }
+    } catch (_) {}
+  }
+
+  void _handleNewQuestion(Map<String, dynamic> record) async {
+    // Alternative path — react to question inserts
+    final sessionId = _ref.read(currentSessionIdProvider);
+    if (sessionId == null) return;
+    final roundNumber = record['round_number'] as int? ?? 1;
+    
+    try {
+      final session = await _repo.getSession(sessionId);
+      final question = await _repo.getQuestionForRound(sessionId, roundNumber);
+      if (question == null) return;
+      
+      final mode = _ref.read(studentModeProvider);
+      if (mode == StudentMode.remote) {
+        state = SessionStreaming(
+          session: session,
+          currentQuestion: question,
+          roundNumber: roundNumber,
+        );
+      } else {
+        state = SessionQuestion(
+          session: session,
+          question: question,
+          roundNumber: roundNumber,
+          timeRemaining: Duration(seconds: question.timeLimitSeconds),
+        );
+        _startTimer(question.timeLimitSeconds);
+      }
+    } catch (_) {}
   }
 
   void _handleSessionStarted(Map<String, dynamic> payload) {
@@ -225,7 +310,7 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
   }
 
   /// Submit a response to the current question
-  Future<void> submitResponse(ResponseType response,
+  Future<void> submitResponse(String response,
       {String? detailText}) async {
     final student = _ref.read(currentStudentProvider);
     if (student == null) return;

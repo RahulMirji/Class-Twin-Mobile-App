@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "lib": ["deno.window"]
+  },
   "imports": {
     "std/http/server": "https://deno.land/std@0.177.0/http/server.ts",
     "livekit-server-sdk": "npm:livekit-server-sdk@2.x"

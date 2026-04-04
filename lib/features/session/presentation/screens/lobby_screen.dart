@@ -32,114 +32,123 @@ class LobbyScreen extends ConsumerWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-
-              // Icon
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
-                ),
-                child: Icon(
-                  isRemote
-                      ? PhosphorIconsRegular.broadcast
-                      : PhosphorIconsRegular.hourglassMedium,
-                  size: 36,
-                  color: AppTheme.textTertiary,
-                ),
-              )
-                  .animate(onPlay: (c) => c.repeat(reverse: true))
-                  .scaleXY(begin: 1, end: 1.05, duration: 2000.ms),
-
-              const SizedBox(height: 32),
-
-              // Title
-              Text(
-                isRemote ? 'Stream starting soon.' : 'Waiting for class...',
-                style: AppTheme.displaySmall,
-                textAlign: TextAlign.center,
-              ).animate().fadeIn(duration: 600.ms),
-
-              const SizedBox(height: 12),
-
-              Text(
-                isRemote
-                    ? 'Your teacher will go live shortly.'
-                    : 'Your teacher will start the session soon.',
-                style: AppTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
-
-              const SizedBox(height: 40),
-
-              // Session info card
-              if (session != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-                  ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Session Topic',
-                        style: AppTheme.labelSmall.copyWith(
-                          letterSpacing: 1,
+                      const Spacer(flex: 2),
+
+                      // Icon
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
+                        ),
+                        child: Icon(
+                          isRemote
+                              ? PhosphorIconsRegular.broadcast
+                              : PhosphorIconsRegular.hourglassMedium,
+                          size: 36,
                           color: AppTheme.textTertiary,
                         ),
-                      ),
-                      const SizedBox(height: 8),
+                      )
+                          .animate(onPlay: (c) => c.repeat(reverse: true))
+                          .scaleXY(begin: 1, end: 1.05, duration: 2000.ms),
+
+                      const SizedBox(height: 32),
+
+                      // Title
                       Text(
-                        session.topic ?? 'No topic set',
-                        style: AppTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          _InfoChip(
-                            icon: PhosphorIconsRegular.listNumbers,
-                            label: '${session.totalRounds} rounds',
+                        isRemote ? 'Stream starting soon.' : 'Waiting for class...',
+                        style: AppTheme.displaySmall,
+                        textAlign: TextAlign.center,
+                      ).animate().fadeIn(duration: 600.ms),
+
+                      const SizedBox(height: 12),
+
+                      Text(
+                        isRemote
+                            ? 'Your teacher will go live shortly.'
+                            : 'Your teacher will start the session soon.',
+                        style: AppTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
+
+                      const SizedBox(height: 40),
+
+                      // Session info card
+                      if (session != null)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                           ),
-                          const SizedBox(width: 12),
-                          _InfoChip(
-                            icon: isRemote
-                                ? PhosphorIconsRegular.monitor
-                                : PhosphorIconsRegular.mapPin,
-                            label: isRemote ? 'Remote' : 'In Room',
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Session Topic',
+                                style: AppTheme.labelSmall.copyWith(
+                                  letterSpacing: 1,
+                                  color: AppTheme.textTertiary,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                session.topic ?? 'No topic set',
+                                style: AppTheme.headlineMedium,
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  _InfoChip(
+                                    icon: PhosphorIconsRegular.listNumbers,
+                                    label: '${session.totalRounds} rounds',
+                                  ),
+                                  const SizedBox(width: 12),
+                                  _InfoChip(
+                                    icon: isRemote
+                                        ? PhosphorIconsRegular.monitor
+                                        : PhosphorIconsRegular.mapPin,
+                                    label: isRemote ? 'Remote' : 'In Room',
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
+
+                      const Spacer(flex: 3),
+
+                      // Subtle loading indicator
+                      SizedBox(
+                        width: 120,
+                        child: LinearProgressIndicator(
+                          backgroundColor: AppTheme.surfaceContainer,
+                          color: AppTheme.textTertiary.withValues(alpha: 0.3),
+                          minHeight: 2,
+                        ),
+                      ).animate(onPlay: (c) => c.repeat()).shimmer(
+                            duration: 1500.ms,
+                            color: AppTheme.surfaceContainerHigh,
+                          ),
+
+                      const SizedBox(height: 32),
                     ],
                   ),
-                ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
-
-              const Spacer(flex: 3),
-
-              // Subtle loading indicator
-              SizedBox(
-                width: 120,
-                child: LinearProgressIndicator(
-                  backgroundColor: AppTheme.surfaceContainer,
-                  color: AppTheme.textTertiary.withValues(alpha: 0.3),
-                  minHeight: 2,
                 ),
-              ).animate(onPlay: (c) => c.repeat()).shimmer(
-                    duration: 1500.ms,
-                    color: AppTheme.surfaceContainerHigh,
-                  ),
-
-              const SizedBox(height: 32),
-            ],
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

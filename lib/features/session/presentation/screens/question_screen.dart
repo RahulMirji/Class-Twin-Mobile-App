@@ -26,9 +26,9 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
     super.dispose();
   }
 
-  void _submitResponse(ResponseType type) {
+  void _submitResponse(String responseText) {
     ref.read(sessionStateProvider.notifier).submitResponse(
-          type,
+          responseText,
           detailText:
               _showDetail ? _detailController.text.trim() : null,
         );
@@ -46,6 +46,11 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
     final question = questionState.question;
     final timeRemaining = questionState.timeRemaining;
     final timeFraction = timeRemaining.inSeconds / question.timeLimitSeconds;
+    
+    // In demo mode or if options are empty, provide fallback options
+    final options = question.options.isNotEmpty 
+        ? question.options 
+        : ['Option A', 'Option B', 'Option C'];
 
     return Scaffold(
       body: SafeArea(
@@ -64,91 +69,90 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
             ),
 
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 48),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 48),
 
-                    // Time remaining
-                    Text(
-                      '${timeRemaining.inSeconds}s',
-                      style: AppTheme.labelMedium.copyWith(
-                        color: AppTheme.textTertiary,
-                      ),
-                    ),
+                            // Time remaining
+                            Text(
+                              '${timeRemaining.inSeconds}s',
+                              style: AppTheme.labelMedium.copyWith(
+                                color: AppTheme.textTertiary,
+                              ),
+                            ),
 
-                    const SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
-                    // Question text — editorial serif
-                    Text(
-                      question.questionText,
-                      style: AppTheme.displayMedium,
-                    ).animate().fadeIn(duration: 500.ms),
+                            // Question text — editorial serif
+                            Text(
+                              question.questionText,
+                              style: AppTheme.displayMedium,
+                            ).animate().fadeIn(duration: 500.ms),
 
-                    const Spacer(),
+                            const Spacer(),
 
-                    // Response buttons
-                    _ResponseButton(
-                      label: 'Got it',
-                      icon: PhosphorIconsBold.checkCircle,
-                      color: AppTheme.responseGotIt,
-                      onTap: () => _submitResponse(ResponseType.gotIt),
-                    ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
+                            const SizedBox(height: 32),
 
-                    const SizedBox(height: 10),
+                            // Response options (MCQ)
+                            ...options.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final optionText = entry.value;
+                              // Provide a stagger delay depending on the index
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _ResponseOptionTile(
+                                  label: optionText,
+                                  onTap: () => _submitResponse(optionText),
+                                ).animate().fadeIn(delay: (100 * index).ms, duration: 400.ms),
+                              );
+                            }),
 
-                    _ResponseButton(
-                      label: 'Somewhat',
-                      icon: PhosphorIconsBold.minusCircle,
-                      color: AppTheme.responseSomewhat,
-                      onTap: () => _submitResponse(ResponseType.somewhat),
-                    ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+                            const SizedBox(height: 16),
 
-                    const SizedBox(height: 10),
+                            // Add detail link
+                            Center(
+                              child: TextButton(
+                                onPressed: () =>
+                                    setState(() => _showDetail = !_showDetail),
+                                child: Text(
+                                  _showDetail ? 'Hide detail' : 'Add detail',
+                                  style: AppTheme.bodySmall.copyWith(
+                                    color: AppTheme.tertiary,
+                                  ),
+                                ),
+                              ),
+                            ),
 
-                    _ResponseButton(
-                      label: 'Lost',
-                      icon: PhosphorIconsBold.xCircle,
-                      color: AppTheme.responseLost,
-                      onTap: () => _submitResponse(ResponseType.lost),
-                    ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
+                            if (_showDetail)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: TextField(
+                                  controller: _detailController,
+                                  maxLines: 3,
+                                  decoration: const InputDecoration(
+                                    hintText: 'What specifically was unclear?',
+                                  ),
+                                ),
+                              )
+                                  .animate()
+                                  .fadeIn(duration: 300.ms)
+                                  .slideY(begin: 0.1),
 
-                    const SizedBox(height: 16),
-
-                    // Add detail link
-                    Center(
-                      child: TextButton(
-                        onPressed: () =>
-                            setState(() => _showDetail = !_showDetail),
-                        child: Text(
-                          _showDetail ? 'Hide detail' : 'Add detail',
-                          style: AppTheme.bodySmall.copyWith(
-                            color: AppTheme.tertiary,
-                          ),
+                            const SizedBox(height: 24),
+                          ],
                         ),
                       ),
                     ),
-
-                    if (_showDetail)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: TextField(
-                          controller: _detailController,
-                          maxLines: 3,
-                          decoration: const InputDecoration(
-                            hintText: 'What specifically was unclear?',
-                          ),
-                        ),
-                      )
-                          .animate()
-                          .fadeIn(duration: 300.ms)
-                          .slideY(begin: 0.1),
-
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ],
@@ -158,16 +162,12 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
   }
 }
 
-class _ResponseButton extends StatelessWidget {
+class _ResponseOptionTile extends StatelessWidget {
   final String label;
-  final IconData icon;
-  final Color color;
   final VoidCallback onTap;
 
-  const _ResponseButton({
+  const _ResponseOptionTile({
     required this.label,
-    required this.icon,
-    required this.color,
     required this.onTap,
   });
 
@@ -175,25 +175,20 @@ class _ResponseButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 56,
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: color.withValues(alpha: 0.3)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          side: const BorderSide(color: AppTheme.outlineVariant),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           ),
+          alignment: Alignment.centerLeft,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: AppTheme.titleMedium.copyWith(color: color),
-            ),
-          ],
+        child: Text(
+          label,
+          style: AppTheme.titleMedium.copyWith(color: AppTheme.textPrimary),
+          textAlign: TextAlign.left,
         ),
       ),
     );
