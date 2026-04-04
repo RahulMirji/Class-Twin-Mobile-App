@@ -1,0 +1,34 @@
+Analyzing Class Twin...                                         
+
+   info - Unnecessary use of multiple underscores - lib\core\demo_gallery.dart:111:39 - unnecessary_underscores
+  error - The class 'GoogleSignIn' doesn't have an unnamed constructor - lib\core\providers\auth_provider.dart:12:38 - new_with_undefined_constructor_default
+  error - The method 'signIn' isn't defined for the type 'GoogleSignIn' - lib\core\providers\auth_provider.dart:40:46 - undefined_method
+  error - The named parameter 'settings' is required, but there's no corresponding argument - lib\core\providers\notification_provider.dart:25:26 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 1 found - lib\core\providers\notification_provider.dart:25:37 - extra_positional_arguments_could_be_named
+  error - A value of type 'TimezoneInfo' can't be assigned to a variable of type 'String' - lib\core\providers\notification_provider.dart:29:33 - invalid_assignment
+  error - The named parameter 'uiLocalNotificationDateInterpretation' isn't defined - lib\core\providers\notification_provider.dart:55:7 - undefined_named_parameter
+  error - Undefined name 'UILocalNotificationDateInterpretation' - lib\core\providers\notification_provider.dart:56:11 - undefined_identifier
+warning - Unused import: 'package:connectivity_plus/connectivity_plus.dart' - lib\core\providers\system_monitor_provider.dart:4:8 - unused_import
+  error - Target of URI doesn't exist: '../../session/presentation/providers/session_list_provider.dart' - lib\features\home\presentation\screens\dashboard_screen.dart:10:8 - uri_does_not_exist
+  error - Undefined name 'activeSessionsProvider' - lib\features\home\presentation\screens\dashboard_screen.dart:54:38 - undefined_identifier
+  error - Undefined name 'upcomingSessionsProvider' - lib\features\home\presentation\screens\dashboard_screen.dart:55:40 - undefined_identifier
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\session\data\session_repository.dart:77:7 - use_null_aware_elements
+  error - Target of URI doesn't exist: '../domain/models/session.dart' - lib\features\session\presentation\providers\session_list_provider.dart:3:8 - uri_does_not_exist
+  error - The returned type 'List<Session?>' isn't returnable from a 'List<Session>' function, as required by the closure's context - lib\features\session\presentation\providers\session_list_provider.dart:11:22 - return_of_invalid_type_from_closure
+  error - The returned type 'List<Session?>' isn't returnable from a 'List<Session>' function, as required by the closure's context - lib\features\session\presentation\providers\session_list_provider.dart:20:22 - return_of_invalid_type_from_closure
+warning - Unused import: '../../domain/models/student_response.dart' - lib\features\session\presentation\providers\session_provider.dart:7:8 - unused_import
+warning - The declaration '_handleSessionStarted' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:203:8 - unused_element
+warning - The declaration '_handleNextQuestion' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:214:8 - unused_element
+warning - The declaration '_handleSessionEnded' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:265:8 - unused_element
+warning - The declaration '_handleResult' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:275:8 - unused_element
+warning - The declaration '_handleStreamStarted' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:279:8 - unused_element
+  error - The named parameter 'livekitRoomName' isn't defined - lib\features\session\presentation\providers\session_provider.dart:294:13 - undefined_named_parameter
+warning - The declaration '_handleStreamEnded' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:301:8 - unused_element
+warning - Dead code - lib\features\session\presentation\screens\lobby_screen.dart:107:47 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\features\session\presentation\screens\lobby_screen.dart:107:50 - dead_null_aware_expression
+warning - Unused import: 'package:flutter_riverpod/flutter_riverpod.dart' - lib\features\session\presentation\screens\qr_scan_screen.dart:5:8 - unused_import
+warning - Unused import: 'package:phosphor_flutter/phosphor_flutter.dart' - lib\features\session\presentation\screens\question_screen.dart:4:8 - unused_import
+warning - Unused import: '../../domain/models/student_response.dart' - lib\features\session\presentation\screens\question_screen.dart:7:8 - unused_import
+warning - Dead code - lib\features\session\presentation\screens\session_end_screen.dart:85:47 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\features\session\presentation\screens\session_end_screen.dart:85:50 - dead_null_aware_expression
+

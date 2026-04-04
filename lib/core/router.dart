@@ -18,6 +18,8 @@ import 'presentation/screens/main_layout.dart';
 import 'providers/preferences_provider.dart';
 import 'demo_gallery.dart';
 
+import 'providers/auth_provider.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final _shellNavigatorJoinKey = GlobalKey<NavigatorState>(debugLabel: 'join');
@@ -25,19 +27,27 @@ final _shellNavigatorLeaderboardKey = GlobalKey<NavigatorState>(debugLabel: 'lea
 final _shellNavigatorStreamKey = GlobalKey<NavigatorState>(debugLabel: 'stream');
 
 final routerProvider = Provider<GoRouter>((ref) {
+  // Watch providers so the router rebuilds/redirects on change
+  final studentName = ref.watch(studentNameProvider);
+  final authState = ref.watch(authStateProvider);
+
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/',
     redirect: (context, state) {
-      final studentName = ref.read(studentNameProvider);
       final isOnboarding = state.matchedLocation == '/onboarding';
 
-      if (studentName == null && !isOnboarding) {
+      // Redirection logic:
+      // 1. If user has no name AND no active auth session, force onboarding
+      if (studentName == null && authState.value == null && !isOnboarding) {
         return '/onboarding';
       }
-      if (studentName != null && isOnboarding) {
+
+      // 2. If user is already set up, don't allow them to stay on onboarding
+      if ((studentName != null || authState.value != null) && isOnboarding) {
         return '/';
       }
+
       return null;
     },
     routes: [

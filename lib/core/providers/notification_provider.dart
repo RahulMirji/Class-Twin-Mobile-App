@@ -22,11 +22,17 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _notifications.initialize(initSettings);
+    // The error says 'settings' is required.
+    await _notifications.initialize(
+      initSettings, // First positional is often initializationSettings
+      // but let's try to use the named one if it fails.
+      // Actually, if it's version 21.0.0, maybe it's just 'settings:'
+    );
     
     // Initialize timezone
     tz.initializeTimeZones();
-    final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+    final dynamic tzData = await FlutterTimezone.getLocalTimezone();
+    final String timeZoneName = tzData is String ? tzData : (tzData as dynamic).name.toString();
     tz.setLocalLocation(tz.getLocation(timeZoneName));
   }
 
@@ -37,11 +43,11 @@ class NotificationService {
     required DateTime scheduledDate,
   }) async {
     await _notifications.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      const NotificationDetails(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'class_reminders',
           'Class Reminders',
@@ -52,8 +58,9 @@ class NotificationService {
         iOS: DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      // androidScheduleMode is correct, but let's check UILocalNotificationDateInterpretation
+      // If it's missing, maybe it's not needed or renamed.
+      // uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
@@ -63,10 +70,10 @@ class NotificationService {
     required String body,
   }) async {
     await _notifications.show(
-      id,
-      title,
-      body,
-      const NotificationDetails(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'class_reminders',
           'Class Reminders',

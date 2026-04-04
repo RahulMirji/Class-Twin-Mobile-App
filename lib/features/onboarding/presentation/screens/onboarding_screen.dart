@@ -6,6 +6,8 @@ import '../../../../core/theme.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../../../core/providers/auth_provider.dart';
+
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -33,8 +35,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    try {
+      await ref.read(authStateProvider.notifier).signInWithGoogle();
+      if (!mounted) return;
+      
+      final authState = ref.read(authStateProvider);
+      if (authState is AsyncData && authState.value != null) {
+        context.go('/');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authStateProvider);
+    final isLoading = authState.isLoading;
+
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(
@@ -71,6 +93,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         controller: _nameController,
                         textCapitalization: TextCapitalization.words,
                         style: AppTheme.titleLarge,
+                        enabled: !isLoading,
                         decoration: InputDecoration(
                           hintText: 'Enter your name',
                           hintStyle: AppTheme.titleLarge.copyWith(
@@ -91,17 +114,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         onSubmitted: (_) => _submitName(),
                       ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
 
-                      const Spacer(),
+                      const SizedBox(height: 24),
 
-                      // Continue button
+                      // Or divider
+                      Row(
+                        children: [
+                          const Expanded(child: Divider()),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text('OR', style: AppTheme.labelSmall),
+                          ),
+                          const Expanded(child: Divider()),
+                        ],
+                      ).animate().fadeIn(delay: 500.ms),
+
+                      const SizedBox(height: 24),
+
+                      // Google Login Button
                       SizedBox(
                         width: double.infinity,
                         height: 56,
-                        child: ElevatedButton(
-                          onPressed: _submitName,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primary,
-                            foregroundColor: AppTheme.onPrimary,
+                        child: OutlinedButton(
+                          onPressed: isLoading ? null : _signInWithGoogle,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: AppTheme.surfaceContainerLow, width: 1.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                             ),
@@ -109,15 +145,50 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text('Continue'),
-                              const SizedBox(width: 8),
-                              Icon(
-                                PhosphorIconsBold.arrowRight,
-                                size: 18,
-                                color: AppTheme.onPrimary,
-                              ),
+                              Icon(PhosphorIconsFill.googleLogo, size: 24, color: AppTheme.primary),
+                              const SizedBox(width: 12),
+                              const Text('Continue with Google'),
                             ],
                           ),
+                        ),
+                      ).animate().fadeIn(delay: 550.ms),
+
+                      const Spacer(),
+
+                      // Continue button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : _submitName,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primary,
+                            foregroundColor: AppTheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                            ),
+                          ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppTheme.onPrimary,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text('Continue'),
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      PhosphorIconsBold.arrowRight,
+                                      size: 18,
+                                      color: AppTheme.onPrimary,
+                                    ),
+                                  ],
+                                ),
                         ),
                       ).animate().fadeIn(delay: 600.ms, duration: 600.ms),
 

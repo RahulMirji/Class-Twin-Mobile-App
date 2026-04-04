@@ -1,0 +1,31 @@
+Analyzing Class Twin...                                         
+
+   info - Unnecessary use of multiple underscores - lib\core\demo_gallery.dart:111:39 - unnecessary_underscores
+  error - The named parameter 'settings' is required, but there's no corresponding argument - lib\core\providers\notification_provider.dart:25:26 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 1 found - lib\core\providers\notification_provider.dart:25:37 - extra_positional_arguments_could_be_named
+  error - A value of type 'TimezoneInfo' can't be assigned to a variable of type 'String' - lib\core\providers\notification_provider.dart:29:33 - invalid_assignment
+  error - The named parameter 'id' is required, but there's no corresponding argument - lib\core\providers\notification_provider.dart:39:26 - missing_required_argument
+  error - The named parameter 'notificationDetails' is required, but there's no corresponding argument - lib\core\providers\notification_provider.dart:39:26 - missing_required_argument
+  error - The named parameter 'scheduledDate' is required, but there's no corresponding argument - lib\core\providers\notification_provider.dart:39:26 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 5 found - lib\core\providers\notification_provider.dart:40:7 - extra_positional_arguments_could_be_named
+  error - The named parameter 'uiLocalNotificationDateInterpretation' isn't defined - lib\core\providers\notification_provider.dart:55:7 - undefined_named_parameter
+  error - Undefined name 'UILocalNotificationDateInterpretation' - lib\core\providers\notification_provider.dart:56:11 - undefined_identifier
+  error - The named parameter 'id' is required, but there's no corresponding argument - lib\core\providers\notification_provider.dart:65:26 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 4 found - lib\core\providers\notification_provider.dart:66:7 - extra_positional_arguments_could_be_named
+warning - Unused import: 'package:connectivity_plus/connectivity_plus.dart' - lib\core\providers\system_monitor_provider.dart:4:8 - unused_import
+  error - Target of URI doesn't exist: '../../../core/providers/notification_provider.dart' - lib\features\home\presentation\screens\dashboard_screen.dart:9:8 - uri_does_not_exist
+  error - The method 'animate' isn't defined for the type 'Future' - lib\features\home\presentation\screens\dashboard_screen.dart:38:7 - undefined_method
+  error - The getter 'backOut' isn't defined for the type 'Curves' - lib\features\home\presentation\screens\dashboard_screen.dart:38:55 - undefined_getter
+  error - Undefined name 'notificationServiceProvider' - lib\features\home\presentation\screens\dashboard_screen.dart:41:42 - undefined_identifier
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\session\data\session_repository.dart:77:7 - use_null_aware_elements
+warning - Unused import: '../../domain/models/student_response.dart' - lib\features\session\presentation\providers\session_provider.dart:7:8 - unused_import
+warning - The declaration '_handleSessionStarted' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:203:8 - unused_element
+warning - The declaration '_handleNextQuestion' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:214:8 - unused_element
+warning - The declaration '_handleSessionEnded' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:265:8 - unused_element
+warning - The declaration '_handleResult' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:275:8 - unused_element
+warning - The declaration '_handleStreamStarted' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:279:8 - unused_element
+warning - The declaration '_handleStreamEnded' isn't referenced - lib\features\session\presentation\providers\session_provider.dart:301:8 - unused_element
+warning - Unused import: 'package:flutter_riverpod/flutter_riverpod.dart' - lib\features\session\presentation\screens\qr_scan_screen.dart:5:8 - unused_import
+warning - Unused import: 'package:phosphor_flutter/phosphor_flutter.dart' - lib\features\session\presentation\screens\question_screen.dart:4:8 - unused_import
+warning - Unused import: '../../domain/models/student_response.dart' - lib\features\session\presentation\screens\question_screen.dart:7:8 - unused_import
+
