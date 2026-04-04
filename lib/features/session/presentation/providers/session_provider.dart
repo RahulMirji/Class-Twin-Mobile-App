@@ -68,8 +68,13 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
       // 3. Set initial state based on session status + mode
       if (session.status == SessionStatus.ended) {
         state = SessionEnded(session);
-      } else if (mode == StudentMode.remote && !session.isStreaming) {
-        state = SessionStreamPending(session);
+      } else if (mode == StudentMode.remote) {
+        // Remote students always go through the streaming path
+        if (session.isStreaming) {
+          state = SessionStreaming(session: session);
+        } else {
+          state = SessionStreamPending(session);
+        }
       } else if (session.status == SessionStatus.waiting) {
         state = SessionLobby(session);
       } else {
@@ -132,39 +137,62 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
         return;
       }
 
+      // Handle streaming state transitions for remote students
+      if (mode == StudentMode.remote) {
+        if (isStreaming) {
+          final currentState = state;
+          if (currentState is SessionStreamPending || 
+              currentState is SessionLobby ||
+              currentState is SessionWaiting) {
+            // Stream started — transition to streaming (no question yet)
+            state = SessionStreaming(session: session);
+          }
+
+          // If a new round has started, overlay the question
+          if (newStatus == 'active' && currentRound > 0) {
+            final question = await _repo.getQuestionForRound(sessionId, currentRound);
+            if (question != null) {
+              state = SessionStreaming(
+                session: session,
+                currentQuestion: question,
+                roundNumber: currentRound,
+              );
+            }
+          }
+
+          // If already streaming, keep them in streaming state
+          if (currentState is SessionStreaming && newStatus == 'active') {
+            // Don't change state — they're already watching
+            return;
+          }
+        } else {
+          // Stream stopped
+          final currentState = state;
+          if (currentState is SessionStreaming) {
+            state = SessionStreamPending(session);
+          }
+        }
+        return;
+      }
+
+      // ─── In-room students (non-remote) ─────────────────────
       if (newStatus == 'active' && currentRound > 0) {
         // A new round has started — fetch the question
         final question = await _repo.getQuestionForRound(sessionId, currentRound);
         if (question != null) {
-          if (mode == StudentMode.remote && isStreaming) {
-            state = SessionStreaming(
-              session: session,
-              currentQuestion: question,
-              roundNumber: currentRound,
-            );
-          } else {
-            state = SessionQuestion(
-              session: session,
-              question: question,
-              roundNumber: currentRound,
-              timeRemaining: Duration(seconds: question.timeLimitSeconds),
-            );
-            _startTimer(question.timeLimitSeconds);
-          }
+          state = SessionQuestion(
+            session: session,
+            question: question,
+            roundNumber: currentRound,
+            timeRemaining: Duration(seconds: question.timeLimitSeconds),
+          );
+          _startTimer(question.timeLimitSeconds);
         }
       } else if (newStatus == 'active') {
         // Session started but no question yet
         final currentState = state;
         if (currentState is SessionLobby || currentState is SessionStreamPending) {
           state = SessionWaiting(session: session, lastRoundNumber: 0);
-        }
-      }
-
-      // Handle streaming state changes
-      if (isStreaming && mode == StudentMode.remote) {
-        final currentState = state;
-        if (currentState is SessionStreamPending || currentState is SessionLobby) {
-          state = SessionStreaming(session: session);
         }
       }
     } catch (_) {}
