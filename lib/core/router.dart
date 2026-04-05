@@ -22,6 +22,7 @@ import 'providers/preferences_provider.dart';
 import 'demo_gallery.dart';
 
 import 'providers/auth_provider.dart';
+import 'theme.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
@@ -164,7 +165,22 @@ class _SessionRouter extends ConsumerWidget {
     final sessionState = ref.watch(sessionStateProvider);
 
     return switch (sessionState) {
-      SessionInitial() => const Center(child: Text('No active class.\nJoin one from the Join tab!', textAlign: TextAlign.center)),
+      SessionInitial() => Scaffold(
+          backgroundColor: AppTheme.surface,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 24),
+                Text(
+                  'Ending class...',
+                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.textTertiary),
+                ),
+              ],
+            ),
+          ),
+        ),
       SessionLoading() => const Scaffold(
           body: Center(child: CircularProgressIndicator()),
         ),

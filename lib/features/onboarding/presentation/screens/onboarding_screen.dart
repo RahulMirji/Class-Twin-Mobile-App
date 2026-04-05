@@ -87,7 +87,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final title = _mode == AuthMode.login 
         ? 'Welcome Back' 
         : _mode == AuthMode.register 
-            ? 'Join ClassTwin' 
+            ? 'Join Class Twin' 
             : 'Reset Password';
 
     final subtitle = _mode == AuthMode.login 
@@ -117,6 +117,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        height: 100,
+                      ),
+                    ).animate().fadeIn(duration: 800.ms).scale(begin: const Offset(0.8, 0.8)),
+                  ),
+                  const SizedBox(height: 40),
                   Text(
                     title,
                     style: AppTheme.displayMedium.copyWith(

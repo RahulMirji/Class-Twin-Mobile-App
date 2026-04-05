@@ -72,11 +72,22 @@ class DashboardScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
                             child: Text(
                               'Welcome Back, $studentName!',
                               style: AppTheme.displayMedium,
+                            ),
+                          ),
+                          Hero(
+                            tag: 'logo',
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                              child: Image.asset(
+                                'assets/images/logo.png',
+                                height: 48,
+                              ),
                             ),
                           ),
                         ],

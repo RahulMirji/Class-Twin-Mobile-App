@@ -1,5 +1,5 @@
 name: class_twin
-description: "ClassTwin — Hybrid Classroom Streaming Student App"
+description: "Class Twin — Intelligent Digital Twin for Hybrid Classrooms"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -54,6 +54,24 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21
+
+flutter_native_splash:
+  color: "#0B0E14"
+  image: assets/images/logo.png
+  android_12:
+    image: assets/images/logo.png
+    color: "#0B0E14"
+  fullscreen: true
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/logo.png

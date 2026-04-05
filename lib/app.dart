@@ -11,7 +11,7 @@ class ClassTwinApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'ClassTwin',
+      title: 'Class Twin',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: router,

@@ -1,4 +1,4 @@
-/// ClassTwin constants — replace placeholders with your actual credentials
+/// Class Twin constants — replace placeholders with your actual credentials
 class AppConstants {
   AppConstants._();
 

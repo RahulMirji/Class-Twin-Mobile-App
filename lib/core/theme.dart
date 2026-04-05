@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// ClassTwin Design System — "Editorial Serenity"
+/// Class Twin Design System — "Editorial Serenity"
 /// Based on the Calm Clarity Design from Stitch
 class AppTheme {
   AppTheme._();
 
   // ─── Color Tokens ───────────────────────────────────────────────
-  // Primary palette — warm, paper-like neutrals
-  static const Color primary = Color(0xFF605E5B);
-  static const Color primaryDim = Color(0xFF54524F);
+  // Primary palette — warm, paper-like neutrals, now darkened for better contrast
+  static const Color primary = Color(0xFF2D2C2A);
+  static const Color primaryDim = Color(0xFF1F1E1D);
   static const Color onPrimary = Color(0xFFFCF7F3);
   static const Color primaryContainer = Color(0xFFE6E2DE);
 
   // Secondary
-  static const Color secondary = Color(0xFF605F5A);
+  static const Color secondary = Color(0xFF3D3C38);
   static const Color secondaryContainer = Color(0xFFE5E2DC);
   static const Color onSecondary = Color(0xFFFCF9F2);
 
@@ -230,17 +230,31 @@ class AppTheme {
         iconTheme: const IconThemeData(color: textPrimary),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primary,
-          foregroundColor: onPrimary,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusLg),
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return surfaceContainerHighest;
+            }
+            if (states.contains(WidgetState.pressed)) {
+              return Colors.black; // Even darker when clicked
+            }
+            return primary; // The new darker primary
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return textTertiary;
+            }
+            return onPrimary;
+          }),
+          elevation: WidgetStateProperty.all(0),
+          padding: WidgetStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           ),
-          textStyle: GoogleFonts.manrope(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLg)),
+          ),
+          textStyle: WidgetStateProperty.all(
+            GoogleFonts.manrope(fontSize: 15, fontWeight: FontWeight.w600),
           ),
         ),
       ),

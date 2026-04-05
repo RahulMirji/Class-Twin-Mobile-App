@@ -136,7 +136,7 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   _MenuTile(
                     icon: PhosphorIconsRegular.info,
-                    title: 'About ClassTwin',
+                    title: 'About Class Twin',
                     onTap: () {},
                   ),
                   
