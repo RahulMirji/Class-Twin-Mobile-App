@@ -31,21 +31,6 @@ class LeaderboardScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (students) {
-          if (students.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(PhosphorIconsRegular.maskHappy, size: 64, color: AppTheme.textTertiary.withValues(alpha: 0.3)),
-                  const SizedBox(height: 16),
-                  Text('No scores yet!', style: AppTheme.headlineMedium),
-                  const SizedBox(height: 8),
-                  Text('Start answering questions to see the board.', 
-                    style: AppTheme.bodyMedium.copyWith(color: AppTheme.textTertiary)),
-                ],
-              ),
-            );
-          }
 
           return CustomScrollView(
             slivers: [

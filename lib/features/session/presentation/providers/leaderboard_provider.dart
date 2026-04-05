@@ -20,7 +20,19 @@ final leaderboardProvider = FutureProvider.autoDispose<List<Map<String, dynamic>
     sessionId = currentState.session.id;
   }
 
-  if (sessionId == null) return [];
+  if (sessionId == null) return _dummyLeaderboard;
 
-  return repository.getLeaderboard(sessionId);
+  final students = await repository.getLeaderboard(sessionId);
+  if (students.isEmpty) return _dummyLeaderboard;
+
+  return students;
 });
+
+const _dummyLeaderboard = [
+  {'name': 'Rahul Mirji', 'score': 1250},
+  {'name': 'Arun Yadav', 'score': 1500},
+  {'name': 'Ananya Singh', 'score': 1050},
+  {'name': 'Sneha Kulkarni', 'score': 980},
+  {'name': 'Amit Bhardwaj', 'score': 850},
+  {'name': 'Vikram Rathore', 'score': 720},
+];

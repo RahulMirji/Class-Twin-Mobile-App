@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -9,6 +10,22 @@ import '../../../../core/providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Feature coming soon!'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMd)),
+        backgroundColor: AppTheme.primary,
+        action: SnackBarAction(
+          label: 'OK',
+          textColor: Colors.white,
+          onPressed: () {},
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -73,7 +90,8 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                           ),
                         ),
-                      ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
+                      ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+                       .scale(duration: 2.seconds, begin: const Offset(1, 1), end: const Offset(1.03, 1.03), curve: Curves.easeInOut),
 
                       const SizedBox(height: 16),
 
@@ -84,16 +102,31 @@ class ProfileScreen extends ConsumerWidget {
 
                       const SizedBox(height: 6),
 
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surfaceContainerLowest,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                          boxShadow: AppTheme.cardShadow,
-                        ),
-                        child: Text(
-                          email,
-                          style: AppTheme.bodySmall,
+                      GestureDetector(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(text: email));
+                          HapticFeedback.lightImpact();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('Email copied to clipboard!'),
+                              duration: const Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMd)),
+                              backgroundColor: AppTheme.tertiary,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceContainerLowest,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                            boxShadow: AppTheme.cardShadow,
+                          ),
+                          child: Text(
+                            email,
+                            style: AppTheme.bodySmall,
+                          ),
                         ),
                       ).animate().fadeIn(delay: 250.ms),
                     ],
@@ -113,13 +146,13 @@ class ProfileScreen extends ConsumerWidget {
                   _MenuTile(
                     icon: PhosphorIconsRegular.user,
                     title: 'Personal Information',
-                    onTap: () {},
-                  ),
+                    onTap: () => _showComingSoon(context),
+                  ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1),
                   _MenuTile(
                     icon: PhosphorIconsRegular.shieldCheck,
                     title: 'Security & Privacy',
-                    onTap: () {},
-                  ),
+                    onTap: () => _showComingSoon(context),
+                  ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.1),
 
                   const SizedBox(height: 28),
                   _buildSectionHeader('App Settings'),
@@ -135,13 +168,13 @@ class ProfileScreen extends ConsumerWidget {
                       inactiveThumbColor: Colors.white,
                       inactiveTrackColor: AppTheme.surfaceContainerHighest,
                     ),
-                  ),
+                  ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.1),
                   _MenuTile(
                     icon: PhosphorIconsRegular.palette,
                     title: 'Appearance',
                     subtitle: 'Light Mode',
-                    onTap: () {},
-                  ),
+                    onTap: () => _showComingSoon(context),
+                  ).animate().fadeIn(delay: 600.ms).slideX(begin: 0.1),
 
                   const SizedBox(height: 28),
                   _buildSectionHeader('Support'),
@@ -149,13 +182,13 @@ class ProfileScreen extends ConsumerWidget {
                   _MenuTile(
                     icon: PhosphorIconsRegular.question,
                     title: 'Help Center',
-                    onTap: () {},
-                  ),
+                    onTap: () => _showComingSoon(context),
+                  ).animate().fadeIn(delay: 700.ms).slideX(begin: 0.1),
                   _MenuTile(
                     icon: PhosphorIconsRegular.info,
                     title: 'About Class Twin',
-                    onTap: () {},
-                  ),
+                    onTap: () => _showComingSoon(context),
+                  ).animate().fadeIn(delay: 800.ms).slideX(begin: 0.1),
 
                   const SizedBox(height: 36),
 
@@ -241,35 +274,38 @@ class _MenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        boxShadow: AppTheme.cardShadow,
-      ),
-      child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          ),
-          child: Icon(icon, size: 20, color: AppTheme.primary),
+    return GestureDetector(
+      onTapDown: (_) => HapticFeedback.selectionClick(),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          boxShadow: AppTheme.cardShadow,
         ),
-        title: Text(title, style: AppTheme.titleMedium),
-        subtitle: subtitle != null
-            ? Text(subtitle!, style: AppTheme.bodySmall)
-            : null,
-        trailing: trailing ??
-            Icon(
-              PhosphorIconsRegular.caretRight,
-              size: 16,
-              color: AppTheme.textTertiary,
+        child: ListTile(
+          onTap: onTap,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryContainer,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
             ),
+            child: Icon(icon, size: 20, color: AppTheme.primary),
+          ),
+          title: Text(title, style: AppTheme.titleMedium),
+          subtitle: subtitle != null
+              ? Text(subtitle!, style: AppTheme.bodySmall)
+              : null,
+          trailing: trailing ??
+              Icon(
+                PhosphorIconsRegular.caretRight,
+                size: 16,
+                color: AppTheme.textTertiary,
+              ),
+        ),
       ),
     );
   }
