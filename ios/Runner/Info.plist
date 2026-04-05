@@ -57,7 +57,9 @@
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 		<key>NSCameraUsageDescription</key>
-		<string>This app requires camera access to scan QR codes to join class sessions.</string>
+		<string>This app requires camera access to scan QR codes and track engagement.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>This app requires microphone access to allow students to speak during class sessions.</string>
 		<key>UIStatusBarHidden</key>
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>

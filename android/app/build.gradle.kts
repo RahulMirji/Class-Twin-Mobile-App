@@ -52,6 +52,12 @@ android {
         }
         release {
             signingConfig = signingConfigs.getByName("debug")
+            
+            // Add ProGuard rules for release build stabilization
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
