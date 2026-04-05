@@ -108,19 +108,6 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          Row(
-                            children: [
-                              _HeaderIconButton(
-                                icon: PhosphorIconsRegular.list,
-                                onTap: () {},
-                              ),
-                              const SizedBox(width: 10),
-                              _HeaderIconButton(
-                                icon: PhosphorIconsRegular.bell,
-                                onTap: () {},
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     ],
@@ -299,7 +286,6 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                 ),
                 const Spacer(),
-                Icon(PhosphorIconsRegular.arrowSquareOut, size: 18, color: Colors.white.withValues(alpha: 0.7)),
               ],
             ),
             const SizedBox(height: 20),
@@ -324,7 +310,7 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
-              height: 46,
+              height: 56,
               child: ElevatedButton(
                 onPressed: () => context.go('/join/$sessionCode'),
                 style: ElevatedButton.styleFrom(
@@ -387,7 +373,7 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
-              height: 46,
+              height: 56,
               child: ElevatedButton(
                 onPressed: () => _showReminderDialog(context, ref, title),
                 style: ElevatedButton.styleFrom(
@@ -454,7 +440,7 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            height: 46,
+            height: 56,
             child: ElevatedButton(
               onPressed: () => context.go('/quiz', extra: assignment),
               style: ElevatedButton.styleFrom(
@@ -500,32 +486,6 @@ class _SectionHeader extends StatelessWidget {
             ),
           ),
       ],
-    );
-  }
-}
-
-// ─── Header Icon Button ───────────────────────────────────────────────────────
-
-class _HeaderIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _HeaderIconButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceContainerLowest,
-          shape: BoxShape.circle,
-          boxShadow: AppTheme.cardShadow,
-        ),
-        child: Icon(icon, size: 20, color: AppTheme.textPrimary),
-      ),
     );
   }
 }

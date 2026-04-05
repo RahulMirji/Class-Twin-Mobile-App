@@ -131,6 +131,9 @@ class ProfileScreen extends ConsumerWidget {
                       value: true,
                       onChanged: (v) {},
                       activeColor: AppTheme.primary,
+                      activeThumbColor: Colors.white,
+                      inactiveThumbColor: Colors.white,
+                      inactiveTrackColor: AppTheme.surfaceContainerHighest,
                     ),
                   ),
                   _MenuTile(
