@@ -23,99 +23,105 @@ class WaitingScreen extends ConsumerWidget {
     }
 
     final state = sessionState;
+    final hasResponse = state.lastResponse != null;
 
     return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
-                    children: [
-                      const Spacer(flex: 2),
+      backgroundColor: AppTheme.surface,
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppTheme.onboardingGradient),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const Spacer(flex: 2),
 
-                      // Checkmark / wait icon
-                      Container(
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          color: state.lastResponse != null
-                              ? AppTheme.tertiary.withValues(alpha: 0.1)
-                              : AppTheme.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
-                        ),
-                        child: Icon(
-                          state.lastResponse != null
-                              ? PhosphorIconsBold.checkCircle
-                              : PhosphorIconsRegular.hourglassMedium,
-                          size: 32,
-                          color: state.lastResponse != null
-                              ? AppTheme.tertiary
-                              : AppTheme.textTertiary,
-                        ),
-                      ).animate().scaleXY(begin: 0.8, end: 1, duration: 500.ms, curve: Curves.elasticOut),
+                        // State icon
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: hasResponse
+                                ? AppTheme.tertiary.withValues(alpha: 0.12)
+                                : AppTheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
+                            boxShadow: hasResponse
+                                ? [BoxShadow(
+                                    color: AppTheme.tertiary.withValues(alpha: 0.18),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 6),
+                                  )]
+                                : AppTheme.ambientShadowWarm,
+                          ),
+                          child: Icon(
+                            hasResponse
+                                ? PhosphorIconsBold.checkCircle
+                                : PhosphorIconsRegular.hourglassMedium,
+                            size: 36,
+                            color: hasResponse ? AppTheme.tertiary : AppTheme.primary,
+                          ),
+                        ).animate().scaleXY(begin: 0.8, end: 1, duration: 500.ms, curve: Curves.elasticOut),
 
-                      const SizedBox(height: 24),
-
-                      Text(
-                        state.lastResponse != null
-                            ? 'Response submitted'
-                            : 'Waiting for next question...',
-                        style: AppTheme.headlineMedium,
-                        textAlign: TextAlign.center,
-                      ).animate().fadeIn(duration: 500.ms),
-
-                      const SizedBox(height: 8),
-
-                      Text(
-                        'Your teacher will share the next question shortly.',
-                        style: AppTheme.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
-
-                      if (state.lastResponse != null) ...[
                         const SizedBox(height: 24),
-                        _ResponseChip(response: state.lastResponse!.response),
-                      ],
 
-                      const Spacer(flex: 3),
+                        Text(
+                          hasResponse
+                              ? 'Response submitted'
+                              : 'Waiting for next question...',
+                          style: AppTheme.headlineMedium,
+                          textAlign: TextAlign.center,
+                        ).animate().fadeIn(duration: 500.ms),
 
-                      // Remote controls
-                      if (mode == StudentMode.remote) ...[
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _ActionButton(
-                                icon: PhosphorIconsBold.chatDots,
-                                label: 'Chat',
-                                onTap: () {
-                                  // Open chat panel
-                                },
+                        const SizedBox(height: 10),
+
+                        Text(
+                          'Your teacher will share the next question shortly.',
+                          style: AppTheme.bodyMedium,
+                          textAlign: TextAlign.center,
+                        ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+
+                        if (hasResponse) ...[
+                          const SizedBox(height: 24),
+                          _ResponseChip(response: state.lastResponse!.response),
+                        ],
+
+                        const Spacer(flex: 3),
+
+                        // Remote action buttons
+                        if (mode == StudentMode.remote) ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _ActionButton(
+                                  icon: PhosphorIconsBold.chatDots,
+                                  label: 'Chat',
+                                  onTap: () {},
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _ActionButton(
-                                icon: PhosphorIconsBold.handPalm,
-                                label: 'Raise Hand',
-                                onTap: () {
-                                  // Show hand raise modal
-                                },
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _ActionButton(
+                                  icon: PhosphorIconsBold.handPalm,
+                                  label: 'Raise Hand',
+                                  onTap: () {},
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -156,15 +162,15 @@ class _ResponseChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: _color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-        border: Border.all(color: _color.withValues(alpha: 0.3)),
+        border: Border.all(color: _color.withValues(alpha: 0.25), width: 1.5),
       ),
       child: Text(
         _label,
-        style: AppTheme.labelMedium.copyWith(color: _color),
+        style: AppTheme.labelMedium.copyWith(color: _color, fontWeight: FontWeight.w600),
       ),
     ).animate().fadeIn(delay: 400.ms, duration: 400.ms);
   }
@@ -184,13 +190,14 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 52,
+      height: 54,
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppTheme.outlineVariant),
+          backgroundColor: AppTheme.surfaceContainerLowest,
+          side: BorderSide(color: AppTheme.outlineVariant.withValues(alpha: 0.6)),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
           ),
         ),
         child: Row(

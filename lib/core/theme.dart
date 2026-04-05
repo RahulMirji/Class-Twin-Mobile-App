@@ -1,55 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Class Twin Design System — "Editorial Serenity"
-/// Based on the Calm Clarity Design from Stitch
+/// Class Twin Design System — "Warm Minimalism"
+/// Inspired by organic, tactile home-app aesthetic
 class AppTheme {
   AppTheme._();
 
   // ─── Color Tokens ───────────────────────────────────────────────
-  // Primary palette — warm, paper-like neutrals, now darkened for better contrast
-  static const Color primary = Color(0xFF2D2C2A);
-  static const Color primaryDim = Color(0xFF1F1E1D);
-  static const Color onPrimary = Color(0xFFFCF7F3);
-  static const Color primaryContainer = Color(0xFFE6E2DE);
+  // Primary palette — warm amber-brown
+  static const Color primary = Color(0xFFA0522D);
+  static const Color primaryDim = Color(0xFF8B4513);
+  static const Color onPrimary = Color(0xFFFFFFFF);
+  static const Color primaryContainer = Color(0xFFF5E6D8);
 
   // Secondary
-  static const Color secondary = Color(0xFF3D3C38);
-  static const Color secondaryContainer = Color(0xFFE5E2DC);
-  static const Color onSecondary = Color(0xFFFCF9F2);
+  static const Color secondary = Color(0xFF6B4C3B);
+  static const Color secondaryContainer = Color(0xFFEEDDD5);
+  static const Color onSecondary = Color(0xFFFFFFFF);
 
-  // Tertiary — signature green accent
+  // Tertiary — signature green accent (keep for "Got It" / success)
   static const Color tertiary = Color(0xFF2D6A4F);
   static const Color tertiaryContainer = Color(0xFFBEFFDC);
   static const Color onTertiary = Color(0xFFE6FFEE);
 
-  // Surface hierarchy — "stacked paper" model
-  static const Color surface = Color(0xFFF9F9F8);
-  static const Color surfaceBright = Color(0xFFF9F9F8);
-  static const Color surfaceContainer = Color(0xFFEBEEED);
-  static const Color surfaceContainerHigh = Color(0xFFE4E9E8);
-  static const Color surfaceContainerHighest = Color(0xFFDDE4E3);
-  static const Color surfaceContainerLow = Color(0xFFF2F4F3);
+  // Surface hierarchy — "warm paper" model
+  static const Color surface = Color(0xFFF8FAF8);
+  static const Color surfaceBright = Color(0xFFFFFFFF);
+  static const Color surfaceContainer = Color(0xFFE8EDE8);
+  static const Color surfaceContainerHigh = Color(0xFFE0E8E0);
+  static const Color surfaceContainerHighest = Color(0xFFD8E2D8);
+  static const Color surfaceContainerLow = Color(0xFFF2F5F2);
   static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
-  static const Color surfaceDim = Color(0xFFD4DCDA);
+  static const Color surfaceDim = Color(0xFFCDD8CD);
 
   // On-surface
-  static const Color onSurface = Color(0xFF2D3433);
-  static const Color onSurfaceVariant = Color(0xFF5A6060);
+  static const Color onSurface = Color(0xFF1A1A1A);
+  static const Color onSurfaceVariant = Color(0xFF6B7280);
 
   // Outline
-  static const Color outline = Color(0xFF757C7B);
-  static const Color outlineVariant = Color(0xFFADB3B2);
+  static const Color outline = Color(0xFF9CA3AF);
+  static const Color outlineVariant = Color(0xFFD1D5DB);
 
   // Inverse
-  static const Color inverseSurface = Color(0xFF0C0F0E);
-  static const Color onInverseSurface = Color(0xFF9C9D9C);
+  static const Color inverseSurface = Color(0xFF1A1A1A);
+  static const Color onInverseSurface = Color(0xFFF3F4F6);
   static const Color inversePrimary = Color(0xFFFFFFFF);
 
   // Error
   static const Color error = Color(0xFF9E422C);
-  static const Color errorContainer = Color(0xFFFE8B70);
-  static const Color onError = Color(0xFFFFF7F6);
+  static const Color errorContainer = Color(0xFFFEE2D5);
+  static const Color onError = Color(0xFFFFFFFF);
 
   // ─── Semantic Colors ────────────────────────────────────────────
   static const Color responseGotIt = Color(0xFF2D6A4F);    // green — mastery
@@ -57,20 +57,25 @@ class AppTheme {
   static const Color responseLost = Color(0xFF9E422C);      // red-brown — lost
 
   // ─── Text Colors ────────────────────────────────────────────────
-  static const Color textPrimary = Color(0xFF1A1917);
-  static const Color textSecondary = Color(0xFF5A6060);
-  static const Color textTertiary = Color(0xFF757C7B);
+  static const Color textPrimary = Color(0xFF1A1A1A);
+  static const Color textSecondary = Color(0xFF6B7280);
+  static const Color textTertiary = Color(0xFF9CA3AF);
 
   // ─── Special ────────────────────────────────────────────────────
   static const Color streamBackground = Color(0xFF000000);
   static const Color accentInk = Color(0xFF2D6A4F);
 
+  // ─── Nav Dark Pill ──────────────────────────────────────────────
+  static const Color navBackground = Color(0xFF1C1C1E);
+  static const Color navIcon = Color(0xFFFFFFFF);
+  static const Color navIconInactive = Color(0xFF8E8E93);
+
   // ─── Border & Radius Tokens ─────────────────────────────────────
-  static const double radiusSm = 4.0;
-  static const double radiusMd = 8.0;
-  static const double radiusLg = 12.0;
-  static const double radiusXl = 16.0;
-  static const double radiusXxl = 24.0;
+  static const double radiusSm = 8.0;
+  static const double radiusMd = 12.0;
+  static const double radiusLg = 16.0;
+  static const double radiusXl = 20.0;
+  static const double radiusXxl = 28.0;
   static const double radiusFull = 9999.0;
 
   // ─── Spacing ────────────────────────────────────────────────────
@@ -88,12 +93,54 @@ class AppTheme {
   static const double spacing64 = 64.0;
   static const double spacing80 = 80.0;
 
+  // ─── Gradients ──────────────────────────────────────────────────
+  /// Soft sage-green header gradient (top of Dashboard, Profile)
+  static const LinearGradient headerGradient = LinearGradient(
+    colors: [Color(0xFFDDEBDD), Color(0xFFF8FAF8)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    stops: [0.0, 1.0],
+  );
+
+  /// Warm amber-brown gradient for active/live cards
+  static const LinearGradient activeCardGradient = LinearGradient(
+    colors: [Color(0xFFB8622A), Color(0xFF7A3B10)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  /// Subtle warm tint gradient for onboarding background
+  static const LinearGradient onboardingGradient = LinearGradient(
+    colors: [Color(0xFFE8F0E8), Color(0xFFFAFAFA)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
   // ─── Elevation (Ambient Shadow) ─────────────────────────────────
   static List<BoxShadow> get ambientShadow => [
         BoxShadow(
-          color: const Color(0xFF1A1917).withValues(alpha: 0.06),
-          blurRadius: 40,
-          offset: const Offset(0, 12),
+          color: const Color(0xFF1A1A1A).withValues(alpha: 0.07),
+          blurRadius: 24,
+          spreadRadius: 0,
+          offset: const Offset(0, 8),
+        ),
+      ];
+
+  static List<BoxShadow> get ambientShadowWarm => [
+        BoxShadow(
+          color: const Color(0xFFA0522D).withValues(alpha: 0.18),
+          blurRadius: 20,
+          spreadRadius: 0,
+          offset: const Offset(0, 8),
+        ),
+      ];
+
+  static List<BoxShadow> get cardShadow => [
+        BoxShadow(
+          color: const Color(0xFF1A1A1A).withValues(alpha: 0.06),
+          blurRadius: 16,
+          spreadRadius: 0,
+          offset: const Offset(0, 4),
         ),
       ];
 
@@ -101,7 +148,7 @@ class AppTheme {
   // Headline / Display — "The Intellectual Voice"
   static TextStyle get displayLarge => GoogleFonts.newsreader(
         fontSize: 36,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         color: textPrimary,
         height: 1.2,
         letterSpacing: -0.5,
@@ -109,7 +156,7 @@ class AppTheme {
 
   static TextStyle get displayMedium => GoogleFonts.newsreader(
         fontSize: 28,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         color: textPrimary,
         height: 1.2,
         letterSpacing: -0.3,
@@ -164,7 +211,7 @@ class AppTheme {
 
   static TextStyle get labelLarge => GoogleFonts.manrope(
         fontSize: 14,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         color: textPrimary,
       );
 
@@ -222,7 +269,7 @@ class AppTheme {
         labelSmall: labelSmall,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: surface,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
@@ -236,9 +283,9 @@ class AppTheme {
               return surfaceContainerHighest;
             }
             if (states.contains(WidgetState.pressed)) {
-              return Colors.black; // Even darker when clicked
+              return primaryDim;
             }
-            return primary; // The new darker primary
+            return primary;
           }),
           foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
             if (states.contains(WidgetState.disabled)) {
@@ -248,10 +295,10 @@ class AppTheme {
           }),
           elevation: WidgetStateProperty.all(0),
           padding: WidgetStateProperty.all(
-            const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
           ),
           shape: WidgetStateProperty.all(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLg)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusFull)),
           ),
           textStyle: WidgetStateProperty.all(
             GoogleFonts.manrope(fontSize: 15, fontWeight: FontWeight.w600),
@@ -264,7 +311,7 @@ class AppTheme {
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radiusLg),
+            borderRadius: BorderRadius.circular(radiusFull),
           ),
           side: const BorderSide(color: outlineVariant),
           textStyle: GoogleFonts.manrope(
@@ -275,10 +322,10 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: tertiary,
+          foregroundColor: primary,
           textStyle: GoogleFonts.manrope(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -287,7 +334,7 @@ class AppTheme {
         fillColor: surfaceContainerLow,
         hintStyle: bodyMedium.copyWith(color: textTertiary),
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusLg),
           borderSide: BorderSide.none,
@@ -316,13 +363,24 @@ class AppTheme {
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
       ),
       dividerTheme: const DividerThemeData(
         color: outlineVariant,
         thickness: 0.5,
         space: 0,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) return onPrimary;
+          return surfaceContainerLowest;
+        }),
+        trackColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) return primary;
+          return surfaceContainerHigh;
+        }),
+        trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
       ),
     );
   }

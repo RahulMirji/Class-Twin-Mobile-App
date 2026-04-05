@@ -15,89 +15,101 @@ class ProfileScreen extends ConsumerWidget {
     final studentName = ref.watch(studentNameProvider) ?? 'Student';
     final authState = ref.watch(authStateProvider);
     final email = authState.value?.email ?? 'No email linked';
+    final initial = studentName.isNotEmpty ? studentName[0].toUpperCase() : 'S';
 
     return Scaffold(
       backgroundColor: AppTheme.surface,
-      appBar: AppBar(
-        title: Text('Profile', style: AppTheme.headlineMedium),
-        centerTitle: true,
-        backgroundColor: AppTheme.surface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // ─── Profile Header ────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-              child: Column(
-                children: [
-                  Stack(
+            // ─── Gradient Header with Profile ──────────────────────────
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: AppTheme.headerGradient,
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 36),
+                  child: Column(
                     children: [
+                      // App bar row
+                      Row(
+                        children: [
+                          Text('Profile', style: AppTheme.titleLarge),
+                          const Spacer(),
+                        ],
+                      ),
+                      const SizedBox(height: 28),
+
+                      // Avatar with amber gradient ring
                       Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFB8622A), Color(0xFFF5C397)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppTheme.tertiary.withValues(alpha: 0.2),
-                            width: 2,
-                          ),
                         ),
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: AppTheme.surfaceContainerLow,
-                          child: Text(
-                            studentName.isNotEmpty ? studentName[0].toUpperCase() : 'S',
-                            style: AppTheme.displayLarge.copyWith(
-                              color: AppTheme.tertiary,
-                              fontSize: 40,
-                            ),
-                          ),
-                        ),
-                      ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
-                      Positioned(
-                        bottom: 4,
-                        right: 4,
                         child: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.all(3),
                           decoration: const BoxDecoration(
                             color: AppTheme.surface,
                             shape: BoxShape.circle,
                           ),
-                          child: Container(
-                            width: 14,
-                            height: 14,
-                            decoration: const BoxDecoration(
-                              color: Colors.green,
-                              shape: BoxShape.circle,
+                          child: CircleAvatar(
+                            radius: 44,
+                            backgroundColor: AppTheme.primaryContainer,
+                            child: Text(
+                              initial,
+                              style: AppTheme.displaySmall.copyWith(
+                                color: AppTheme.primary,
+                                fontSize: 36,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),
-                      ).animate().fadeIn(delay: 400.ms),
+                      ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
+
+                      const SizedBox(height: 16),
+
+                      Text(
+                        studentName,
+                        style: AppTheme.displaySmall,
+                      ).animate().fadeIn(delay: 150.ms),
+
+                      const SizedBox(height: 6),
+
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceContainerLowest,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                          boxShadow: AppTheme.cardShadow,
+                        ),
+                        child: Text(
+                          email,
+                          style: AppTheme.bodySmall,
+                        ),
+                      ).animate().fadeIn(delay: 250.ms),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    studentName,
-                    style: AppTheme.displaySmall,
-                  ).animate().fadeIn(delay: 200.ms),
-                  const SizedBox(height: 4),
-                  Text(
-                    email,
-                    style: AppTheme.bodyMedium,
-                  ).animate().fadeIn(delay: 300.ms),
-                ],
+                ),
               ),
             ),
 
             // ─── Menu Sections ─────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionHeader('Account Settings'),
+                  const SizedBox(height: 10),
                   _MenuTile(
                     icon: PhosphorIconsRegular.user,
                     title: 'Personal Information',
@@ -108,16 +120,17 @@ class ProfileScreen extends ConsumerWidget {
                     title: 'Security & Privacy',
                     onTap: () {},
                   ),
-                  
-                  const SizedBox(height: 32),
+
+                  const SizedBox(height: 28),
                   _buildSectionHeader('App Settings'),
+                  const SizedBox(height: 10),
                   _MenuTile(
                     icon: PhosphorIconsRegular.bell,
                     title: 'Notifications',
                     trailing: Switch.adaptive(
                       value: true,
                       onChanged: (v) {},
-                      activeColor: AppTheme.tertiary,
+                      activeColor: AppTheme.primary,
                     ),
                   ),
                   _MenuTile(
@@ -126,9 +139,10 @@ class ProfileScreen extends ConsumerWidget {
                     subtitle: 'Light Mode',
                     onTap: () {},
                   ),
-                  
-                  const SizedBox(height: 32),
+
+                  const SizedBox(height: 28),
                   _buildSectionHeader('Support'),
+                  const SizedBox(height: 10),
                   _MenuTile(
                     icon: PhosphorIconsRegular.question,
                     title: 'Help Center',
@@ -139,10 +153,10 @@ class ProfileScreen extends ConsumerWidget {
                     title: 'About Class Twin',
                     onTap: () {},
                   ),
-                  
-                  const SizedBox(height: 48),
-                  
-                  // ─── Logout ──────────────────────────────────────────
+
+                  const SizedBox(height: 36),
+
+                  // ─── Logout ─────────────────────────────────────────
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -156,16 +170,16 @@ class ProfileScreen extends ConsumerWidget {
                         style: AppTheme.labelLarge.copyWith(color: AppTheme.error),
                       ),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppTheme.error.withValues(alpha: 0.3)),
+                        side: BorderSide(color: AppTheme.error.withValues(alpha: 0.35)),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                         ),
                       ),
                     ),
                   ).animate().fadeIn(delay: 600.ms),
-                  
-                  const SizedBox(height: 48),
-                  
+
+                  const SizedBox(height: 28),
+
                   Center(
                     child: Text(
                       'Version 1.0.2',
@@ -183,56 +197,26 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12, left: 4),
-      child: Text(
-        title.toUpperCase(),
-        style: AppTheme.labelSmall.copyWith(
-          letterSpacing: 1.5,
-          fontWeight: FontWeight.bold,
-          color: AppTheme.textTertiary,
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 14,
+          decoration: BoxDecoration(
+            color: AppTheme.primary,
+            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _StatCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: AppTheme.displaySmall.copyWith(fontSize: 24),
+        const SizedBox(width: 8),
+        Text(
+          title.toUpperCase(),
+          style: AppTheme.labelSmall.copyWith(
+            letterSpacing: 1.2,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textSecondary,
           ),
-          Text(
-            label,
-            style: AppTheme.labelSmall,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -255,32 +239,34 @@ class _MenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: AppTheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppTheme.outlineVariant.withValues(alpha: 0.1)),
+        boxShadow: AppTheme.cardShadow,
       ),
       child: ListTile(
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
-            color: AppTheme.surfaceContainerLow,
+            color: AppTheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           ),
-          child: Icon(icon, size: 20, color: AppTheme.textPrimary),
+          child: Icon(icon, size: 20, color: AppTheme.primary),
         ),
         title: Text(title, style: AppTheme.titleMedium),
-        subtitle: subtitle != null 
-            ? Text(subtitle!, style: AppTheme.bodySmall) 
+        subtitle: subtitle != null
+            ? Text(subtitle!, style: AppTheme.bodySmall)
             : null,
-        trailing: trailing ?? Icon(
-          PhosphorIconsRegular.caretRight,
-          size: 16,
-          color: AppTheme.textTertiary,
-        ),
+        trailing: trailing ??
+            Icon(
+              PhosphorIconsRegular.caretRight,
+              size: 16,
+              color: AppTheme.textTertiary,
+            ),
       ),
     );
   }

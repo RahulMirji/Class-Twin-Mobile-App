@@ -63,7 +63,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SnackBar(content: Text('Password reset email sent!')),
         );
         _switchMode(AuthMode.login);
-        return; // Don't redirect on forgot password
+        return;
       }
 
       if (!mounted) return;
@@ -97,178 +97,225 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             : 'Enter your email to receive a reset link';
 
     return Scaffold(
-      appBar: _mode == AuthMode.forgotPassword 
-          ? AppBar(
-              leading: IconButton(
-                icon: const Icon(PhosphorIconsRegular.arrowLeft),
-                onPressed: () => _switchMode(AuthMode.login),
-              ),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-            )
-          : null,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        height: 100,
-                      ),
-                    ).animate().fadeIn(duration: 800.ms).scale(begin: const Offset(0.8, 0.8)),
+      backgroundColor: AppTheme.surface,
+      body: Container(
+        // Sage gradient background
+        decoration: const BoxDecoration(
+          gradient: AppTheme.onboardingGradient,
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              if (_mode == AuthMode.forgotPassword)
+                Positioned(
+                  top: 8,
+                  left: 4,
+                  child: IconButton(
+                    icon: Icon(PhosphorIconsRegular.arrowLeft, color: AppTheme.textPrimary),
+                    onPressed: () => _switchMode(AuthMode.login),
                   ),
-                  const SizedBox(height: 40),
-                  Text(
-                    title,
-                    style: AppTheme.displayMedium.copyWith(
-                      color: AppTheme.textPrimary,
-                      letterSpacing: -1,
-                    ),
-                  ).animate(key: ValueKey(title)).fadeIn().slideX(),
-
-                  const SizedBox(height: 12),
-                  Text(
-                    subtitle,
-                    style: AppTheme.bodyLarge,
-                  ).animate(key: ValueKey(subtitle)).fadeIn().slideX(),
-
-                  const SizedBox(height: 48),
-
-                  if (_mode == AuthMode.register) ...[
-                    TextFormField(
-                      controller: _nameController,
-                      textCapitalization: TextCapitalization.words,
-                      enabled: !isLoading,
-                      decoration: InputDecoration(
-                        labelText: 'Full Name',
-                        prefixIcon: const Icon(PhosphorIconsRegular.user),
-                        filled: true,
-                        fillColor: AppTheme.surfaceContainerLow,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      validator: (v) => v!.isEmpty ? 'Name is required' : null,
-                    ).animate().fadeIn(),
-                    const SizedBox(height: 16),
-                  ],
-
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    enabled: !isLoading,
-                    decoration: InputDecoration(
-                      labelText: 'Email Address',
-                      prefixIcon: const Icon(PhosphorIconsRegular.envelope),
-                      filled: true,
-                      fillColor: AppTheme.surfaceContainerLow,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    validator: (v) => !v!.contains('@') ? 'Please enter a valid email' : null,
-                  ).animate().fadeIn(delay: 100.ms),
-
-                  const SizedBox(height: 16),
-
-                  if (_mode != AuthMode.forgotPassword) ...[
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      enabled: !isLoading,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(PhosphorIconsRegular.lockKey),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                        ),
-                        filled: true,
-                        fillColor: AppTheme.surfaceContainerLow,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      validator: (v) => v!.length < 6 ? 'Password must be at least 6 characters' : null,
-                    ).animate().fadeIn(delay: 200.ms),
-                  ],
-
-                  if (_mode == AuthMode.login)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => _switchMode(AuthMode.forgotPassword),
-                        child: Text(
-                          'Forgot Password?',
-                          style: AppTheme.labelMedium.copyWith(color: AppTheme.primary),
-                        ),
-                      ),
-                    ).animate().fadeIn(),
-
-                  const SizedBox(height: 32),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        foregroundColor: AppTheme.onPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                        ),
-                      ),
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: AppTheme.onPrimary)
-                          : Text(
-                              _mode == AuthMode.login 
-                                  ? 'Log In' 
-                                  : _mode == AuthMode.register 
-                                      ? 'Sign Up' 
-                                      : 'Send Reset Link',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                    ),
-                  ).animate().fadeIn(delay: 300.ms),
-
-                  const SizedBox(height: 24),
-
-                  if (_mode != AuthMode.forgotPassword)
-                    Row(
+                ),
+              Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const SizedBox(height: 20),
+                        // Logo
+                        Center(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
+                              boxShadow: AppTheme.cardShadow,
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
+                              child: Image.asset(
+                                'assets/images/logo.png',
+                                height: 108,
+                              ),
+                            ),
+                          ).animate().fadeIn(duration: 800.ms).scale(begin: const Offset(0.85, 0.85)),
+                        ),
+
+                        const SizedBox(height: 44),
+
+                        // Title
                         Text(
-                          _mode == AuthMode.login ? "Don't have an account?" : "Already have an account?",
-                          style: AppTheme.bodyMedium,
-                        ),
-                        TextButton(
-                          onPressed: () => _switchMode(_mode == AuthMode.login ? AuthMode.register : AuthMode.login),
-                          child: Text(
-                            _mode == AuthMode.login ? "Sign Up" : "Log In",
-                            style: AppTheme.labelLarge.copyWith(color: AppTheme.primary),
+                          title,
+                          style: AppTheme.displayMedium.copyWith(
+                            color: AppTheme.textPrimary,
+                            letterSpacing: -0.5,
                           ),
-                        ),
+                        ).animate(key: ValueKey(title)).fadeIn().slideX(begin: -0.05),
+
+                        const SizedBox(height: 10),
+
+                        // Subtitle
+                        Text(
+                          subtitle,
+                          style: AppTheme.bodyLarge.copyWith(color: AppTheme.textSecondary),
+                        ).animate(key: ValueKey(subtitle)).fadeIn().slideX(begin: -0.05),
+
+                        const SizedBox(height: 40),
+
+                        // Form fields
+                        if (_mode == AuthMode.register) ...[
+                          _buildInput(
+                            controller: _nameController,
+                            label: 'Full Name',
+                            icon: PhosphorIconsRegular.user,
+                            enabled: !isLoading,
+                            textCapitalization: TextCapitalization.words,
+                            validator: (v) => v!.isEmpty ? 'Name is required' : null,
+                          ).animate().fadeIn(),
+                          const SizedBox(height: 14),
+                        ],
+
+                        _buildInput(
+                          controller: _emailController,
+                          label: 'Email Address',
+                          icon: PhosphorIconsRegular.envelope,
+                          enabled: !isLoading,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) => !v!.contains('@') ? 'Please enter a valid email' : null,
+                        ).animate().fadeIn(delay: 100.ms),
+
+                        const SizedBox(height: 14),
+
+                        if (_mode != AuthMode.forgotPassword) ...[
+                          _buildInput(
+                            controller: _passwordController,
+                            label: 'Password',
+                            icon: PhosphorIconsRegular.lockKey,
+                            enabled: !isLoading,
+                            obscureText: _obscurePassword,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash,
+                                color: AppTheme.textTertiary,
+                                size: 20,
+                              ),
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                            validator: (v) => v!.length < 6 ? 'Password must be at least 6 characters' : null,
+                          ).animate().fadeIn(delay: 200.ms),
+                        ],
+
+                        if (_mode == AuthMode.login)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () => _switchMode(AuthMode.forgotPassword),
+                              child: Text(
+                                'Forgot Password?',
+                                style: AppTheme.labelMedium.copyWith(color: AppTheme.primary),
+                              ),
+                            ),
+                          ).animate().fadeIn(),
+
+                        const SizedBox(height: 28),
+
+                        // CTA Button — full pill
+                        SizedBox(
+                          width: double.infinity,
+                          height: 58,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : _submit,
+                            child: isLoading
+                                ? const SizedBox(
+                                    height: 22,
+                                    width: 22,
+                                    child: CircularProgressIndicator(
+                                      color: AppTheme.onPrimary,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : Text(
+                                    _mode == AuthMode.login 
+                                        ? 'Log In' 
+                                        : _mode == AuthMode.register 
+                                            ? 'Sign Up' 
+                                            : 'Send Reset Link',
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                  ),
+                          ),
+                        ).animate().fadeIn(delay: 300.ms),
+
+                        const SizedBox(height: 24),
+
+                        if (_mode != AuthMode.forgotPassword)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _mode == AuthMode.login ? "Don't have an account?" : "Already have an account?",
+                                style: AppTheme.bodyMedium,
+                              ),
+                              TextButton(
+                                onPressed: () => _switchMode(_mode == AuthMode.login ? AuthMode.register : AuthMode.login),
+                                child: Text(
+                                  _mode == AuthMode.login ? "Sign Up" : "Log In",
+                                  style: AppTheme.labelLarge.copyWith(color: AppTheme.primary),
+                                ),
+                              ),
+                            ],
+                          ).animate().fadeIn(),
+
+                        const SizedBox(height: 20),
                       ],
-                    ).animate().fadeIn(),
-                ],
+                    ),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInput({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required bool enabled,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      enabled: enabled,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20, color: AppTheme.textTertiary),
+        suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: AppTheme.surfaceContainerLowest,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          borderSide: BorderSide(color: AppTheme.outlineVariant.withValues(alpha: 0.6), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+        ),
+      ),
+      validator: validator,
     );
   }
 }

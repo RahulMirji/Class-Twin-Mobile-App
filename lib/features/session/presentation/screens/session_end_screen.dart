@@ -30,95 +30,128 @@ class SessionEndScreen extends ConsumerWidget {
     final s = session;
 
     return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
-                    children: [
-                      const Spacer(flex: 2),
+      backgroundColor: AppTheme.surface,
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppTheme.onboardingGradient),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const Spacer(flex: 2),
 
-                      // Success icon
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: AppTheme.tertiary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
-                        ),
-                        child: const Icon(
-                          PhosphorIconsBold.checkCircle,
-                          size: 40,
-                          color: AppTheme.tertiary,
-                        ),
-                      ).animate().scaleXY(begin: 0.5, end: 1, duration: 600.ms, curve: Curves.elasticOut),
+                        // Success icon — larger, warm green glow
+                        Container(
+                          width: 96,
+                          height: 96,
+                          decoration: BoxDecoration(
+                            color: AppTheme.tertiary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.tertiary.withValues(alpha: 0.2),
+                                blurRadius: 24,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            PhosphorIconsBold.checkCircle,
+                            size: 48,
+                            color: AppTheme.tertiary,
+                          ),
+                        ).animate().scaleXY(begin: 0.4, end: 1, duration: 700.ms, curve: Curves.elasticOut),
 
-                      const SizedBox(height: 32),
+                        const SizedBox(height: 32),
 
-                      // Text
-                      Text(
-                        'Session Complete',
-                        style: AppTheme.displayMedium,
-                        textAlign: TextAlign.center,
-                      ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
+                        Text(
+                          'Session Complete',
+                          style: AppTheme.displayMedium,
+                          textAlign: TextAlign.center,
+                        ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
 
-                      const SizedBox(height: 12),
+                        const SizedBox(height: 12),
 
-                      Text(
-                        'Great work! Your responses have been recorded.',
-                        style: AppTheme.bodyLarge,
-                        textAlign: TextAlign.center,
-                      ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
+                        Text(
+                          'Great work! Your responses have been recorded.',
+                          style: AppTheme.bodyLarge,
+                          textAlign: TextAlign.center,
+                        ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
 
-                      const SizedBox(height: 32),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              s.topic,
-                              style: AppTheme.titleMedium,
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '${s.totalRounds} rounds completed',
-                              style: AppTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ).animate().fadeIn(delay: 600.ms, duration: 600.ms),
+                        const SizedBox(height: 32),
 
-                      const Spacer(flex: 3),
+                        // Summary card
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceContainerLowest,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+                            boxShadow: AppTheme.cardShadow,
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                                ),
+                                child: const Icon(
+                                  PhosphorIconsRegular.bookOpen,
+                                  color: AppTheme.primary,
+                                  size: 22,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              Text(
+                                s.topic,
+                                style: AppTheme.titleMedium,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                                ),
+                                child: Text(
+                                  '${s.totalRounds} rounds completed',
+                                  style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ).animate().fadeIn(delay: 600.ms, duration: 600.ms),
 
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            ref.read(sessionStateProvider.notifier).leaveSession();
-                            context.go('/');
-                          },
-                          child: const Text('Return Home'),
-                        ),
-                      ).animate().fadeIn(delay: 800.ms, duration: 500.ms),
+                        const Spacer(flex: 3),
 
-                      const SizedBox(height: 32),
-                    ],
+                        SizedBox(
+                          width: double.infinity,
+                          height: 58,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              ref.read(sessionStateProvider.notifier).leaveSession();
+                              context.go('/');
+                            },
+                            child: const Text('Return Home', style: TextStyle(fontSize: 16)),
+                          ),
+                        ).animate().fadeIn(delay: 800.ms, duration: 500.ms),
+
+                        const SizedBox(height: 32),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

@@ -25,7 +25,7 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
 
   void _joinSession() async {
     final name = ref.read(studentNameProvider);
-    if (name == null || name.isEmpty) return; // Should not happen with onboarding guard
+    if (name == null || name.isEmpty) return;
 
     final mode = _selectedMode ?? StudentMode.inRoom;
 
@@ -49,7 +49,6 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
         ),
       );
     } else {
-      // Navigation is handled by the router redirect
       context.go('/session');
     }
   }
@@ -57,97 +56,113 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 16),
-                      IconButton(
-                        onPressed: () => context.go('/'),
-                        icon: Icon(PhosphorIconsBold.caretLeft,
-                            color: AppTheme.textPrimary, size: 22),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      Text(
-                        'How are you joining?',
-                        style: AppTheme.displayMedium,
-                      ).animate().fadeIn(duration: 500.ms),
-
-                      const SizedBox(height: 8),
-                      Text(
-                        'Session Mode',
-                        style: AppTheme.labelMedium.copyWith(color: AppTheme.textTertiary),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Mode card A: In Room
-                      _ModeCard(
-                        icon: PhosphorIconsBold.mapPin,
-                        title: "I'm in the classroom",
-                        subtitle: 'Sync with local hardware',
-                        isSelected: _selectedMode == StudentMode.inRoom,
-                        onTap: () => setState(() => _selectedMode = StudentMode.inRoom),
-                      ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
-
-                      const SizedBox(height: 12),
-
-                      // Mode card B: Remote
-                      _ModeCard(
-                        icon: PhosphorIconsBold.monitor,
-                        title: "I'm joining remotely",
-                        subtitle: 'Virtual learning environment',
-                        badge: 'Requires good WiFi',
-                        isSelected: _selectedMode == StudentMode.remote,
-                        onTap: () => setState(() => _selectedMode = StudentMode.remote),
-                      ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
-
-                      const Spacer(),
-
-                      // Join button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed:
-                              _selectedMode != null && !_isJoining ? _joinSession : null,
-                          child: _isJoining
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppTheme.onPrimary,
-                                  ),
-                                )
-                              : const Text('Continue'),
+      backgroundColor: AppTheme.surface,
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppTheme.onboardingGradient),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        // Back button
+                        GestureDetector(
+                          onTap: () => context.go('/'),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceContainerLowest,
+                              shape: BoxShape.circle,
+                              boxShadow: AppTheme.cardShadow,
+                            ),
+                            child: Icon(
+                              PhosphorIconsBold.caretLeft,
+                              color: AppTheme.textPrimary,
+                              size: 18,
+                            ),
+                          ),
                         ),
-                      ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
 
-                      const SizedBox(height: 12),
-                      Center(
-                        child: Text(
-                          'By joining you agree to our terms of conduct',
-                          style: AppTheme.labelSmall,
-                          textAlign: TextAlign.center,
+                        const SizedBox(height: 32),
+
+                        Text(
+                          'How are you\njoining?',
+                          style: AppTheme.displayMedium.copyWith(height: 1.15),
+                        ).animate().fadeIn(duration: 500.ms),
+
+                        const SizedBox(height: 6),
+                        Text(
+                          'Session Mode',
+                          style: AppTheme.labelMedium.copyWith(color: AppTheme.textTertiary),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
+
+                        const SizedBox(height: 28),
+
+                        // Mode card A: In Room
+                        _ModeCard(
+                          icon: PhosphorIconsBold.mapPin,
+                          title: "I'm in the classroom",
+                          subtitle: 'Sync with local hardware',
+                          isSelected: _selectedMode == StudentMode.inRoom,
+                          onTap: () => setState(() => _selectedMode = StudentMode.inRoom),
+                        ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+
+                        const SizedBox(height: 12),
+
+                        // Mode card B: Remote
+                        _ModeCard(
+                          icon: PhosphorIconsBold.monitor,
+                          title: "I'm joining remotely",
+                          subtitle: 'Virtual learning environment',
+                          badge: 'Requires good WiFi',
+                          isSelected: _selectedMode == StudentMode.remote,
+                          onTap: () => setState(() => _selectedMode = StudentMode.remote),
+                        ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
+
+                        const Spacer(),
+
+                        // Join button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 58,
+                          child: ElevatedButton(
+                            onPressed: _selectedMode != null && !_isJoining ? _joinSession : null,
+                            child: _isJoining
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: AppTheme.onPrimary,
+                                    ),
+                                  )
+                                : const Text('Continue', style: TextStyle(fontSize: 16)),
+                          ),
+                        ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
+
+                        const SizedBox(height: 12),
+                        Center(
+                          child: Text(
+                            'By joining you agree to our terms of conduct',
+                            style: AppTheme.labelSmall,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -179,32 +194,29 @@ class _ModeCard extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.surfaceContainerLowest
-              : AppTheme.surfaceContainerLow,
+          color: isSelected ? AppTheme.surfaceContainerLowest : AppTheme.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
           border: Border.all(
-            color: isSelected ? AppTheme.primary : Colors.transparent,
-            width: 1.5,
+            color: isSelected ? AppTheme.primary : AppTheme.outlineVariant.withValues(alpha: 0.5),
+            width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? AppTheme.ambientShadow : null,
+          boxShadow: isSelected ? AppTheme.ambientShadowWarm : AppTheme.cardShadow,
         ),
         child: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? AppTheme.primaryContainer
-                    : AppTheme.surfaceContainer,
+                color: isSelected ? AppTheme.primaryContainer : AppTheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(AppTheme.radiusLg),
               ),
-              child: Icon(icon,
-                  color: isSelected
-                      ? AppTheme.primary
-                      : AppTheme.textTertiary,
-                  size: 22),
+              child: Icon(
+                icon,
+                color: isSelected ? AppTheme.primary : AppTheme.textTertiary,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -218,11 +230,11 @@ class _ModeCard extends StatelessWidget {
               ),
             ),
             if (badge != null) ...[
+              const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.responseSomewhat.withValues(alpha: 0.15),
+                  color: AppTheme.responseSomewhat.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                 ),
                 child: Text(
@@ -234,6 +246,10 @@ class _ModeCard extends StatelessWidget {
                   ),
                 ),
               ),
+            ],
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Icon(PhosphorIconsFill.checkCircle, color: AppTheme.primary, size: 20),
             ],
           ],
         ),
