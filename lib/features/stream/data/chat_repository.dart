@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../domain/models/chat_message.dart';
+import 'package:class_twin/features/stream/domain/models/chat_message.dart';
 
 /// Chat repository — Supabase CRUD and Realtime for chat messages
 class ChatRepository {

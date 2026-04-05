@@ -54,18 +54,24 @@ class SessionRepository {
     }).eq('id', studentId);
   }
 
-  /// Get current question for a round
-  Future<Question?> getQuestionForRound(
+  /// Get all questions for a round
+  Future<List<Question>> getQuestionsForRound(
       String sessionId, int roundNumber) async {
     final response = await _client
         .from('questions')
         .select()
         .eq('session_id', sessionId)
         .eq('round_number', roundNumber)
-        .maybeSingle();
+        .order('created_at', ascending: true);
 
-    if (response == null) return null;
-    return Question.fromJson(response);
+    return (response as List).map((json) => Question.fromJson(json)).toList();
+  }
+
+  /// Get a single question for a round (legacy/fallback)
+  Future<Question?> getQuestionForRound(
+      String sessionId, int roundNumber) async {
+    final questions = await getQuestionsForRound(sessionId, roundNumber);
+    return questions.isNotEmpty ? questions.first : null;
   }
 
   /// Submit a response

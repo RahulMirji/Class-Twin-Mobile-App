@@ -21,6 +21,7 @@ class MainLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: navigationShell,
       bottomNavigationBar: _FloatingPillNav(
         currentIndex: navigationShell.currentIndex,
@@ -46,9 +47,9 @@ class _FloatingPillNav extends StatelessWidget {
       label: 'Home',
     ),
     _NavItem(
-      icon: PhosphorIconsRegular.personSimpleWalk,
-      activeIcon: PhosphorIconsFill.personSimpleWalk,
-      label: 'Join',
+      icon: PhosphorIconsRegular.bookBookmark,
+      activeIcon: PhosphorIconsFill.bookBookmark,
+      label: 'Notes',
     ),
     _NavItem(
       icon: PhosphorIconsRegular.trophy,
@@ -66,7 +67,7 @@ class _FloatingPillNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPad = MediaQuery.of(context).padding.bottom;
     return Container(
-      color: AppTheme.surface,
+      color: Colors.transparent,
       padding: EdgeInsets.only(
         left: 20,
         right: 20,

@@ -17,10 +17,10 @@ import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/session/presentation/screens/quiz_screen.dart';
 import '../features/session/domain/models/remedial_assignment.dart';
+import '../features/home/presentation/screens/notes_screen.dart';
 import 'presentation/screens/main_layout.dart';
 import 'providers/preferences_provider.dart';
 import 'demo_gallery.dart';
-
 import 'providers/auth_provider.dart';
 import 'theme.dart';
 
@@ -102,6 +102,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const _SessionRouter(),
       ),
 
+      // Join screen (manual code entry)
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/join',
+        builder: (context, state) => const HomeScreen(),
+      ),
+
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainLayout(navigationShell: navigationShell);
@@ -118,13 +125,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Branch 1: Join Code Entry
+          // Branch 1: Notes
           StatefulShellBranch(
             navigatorKey: _shellNavigatorJoinKey,
             routes: [
               GoRoute(
-                path: '/join-tab',
-                builder: (context, state) => const HomeScreen(),
+                path: '/notes',
+                builder: (context, state) => const NotesScreen(),
               ),
             ],
           ),

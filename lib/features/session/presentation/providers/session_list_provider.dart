@@ -80,6 +80,6 @@ Future<List<Session>> _fetchSessions(String status) async {
       .from('sessions')
       .select()
       .eq('status', status)
-      .order('created_at');
+      .order('created_at', ascending: false);
   return (data as List).map((json) => Session.fromJson(json)).toList();
 }

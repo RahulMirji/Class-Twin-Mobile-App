@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../../data/chat_repository.dart';
-import '../../domain/models/chat_message.dart';
-import '../../../../core/constants.dart';
+import 'package:class_twin/features/stream/data/chat_repository.dart';
+import 'package:class_twin/features/stream/domain/models/chat_message.dart';
+import 'package:class_twin/core/constants.dart';
 
 // ─── Repository Provider ──────────────────────────────────────
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
@@ -97,6 +97,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
       studentName: isAnonymous ? 'Anonymous' : studentName,
       messageText: messageText.trim(),
       isAnonymous: isAnonymous,
+      isTeacher: false, // Students are never teachers
       sentAt: DateTime.now(),
       status: ChatMessageStatus.pending,
     );

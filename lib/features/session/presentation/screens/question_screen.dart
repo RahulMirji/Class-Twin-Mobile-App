@@ -23,6 +23,17 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant QuestionScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Clear detail when question changes
+    final state = ref.read(sessionStateProvider);
+    if (state is SessionQuestion) {
+      _detailController.clear();
+      _showDetail = false;
+    }
+  }
+
   void _submitResponse(String responseText) {
     ref.read(sessionStateProvider.notifier).submitResponse(
           responseText,
@@ -41,9 +52,11 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
     }
 
     final questionState = sessionState;
-    final question = questionState.question;
+    final question = questionState.currentQuestion;
     final timeRemaining = questionState.timeRemaining;
     final timeFraction = timeRemaining.inSeconds / question.timeLimitSeconds;
+    final currentIndex = questionState.currentIndex;
+    final totalQuestions = questionState.questions.length;
 
     final options = question.options;
 
@@ -82,27 +95,43 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                           children: [
                             const SizedBox(height: 32),
 
-                            // Time remaining chip
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: timerColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.timer_outlined, size: 14, color: timerColor),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    '${timeRemaining.inSeconds}s remaining',
-                                    style: AppTheme.labelSmall.copyWith(
-                                      color: timerColor,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                            // Round info & Timer row
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Question ${currentIndex + 1} of $totalQuestions',
+                                  style: AppTheme.labelMedium.copyWith(
+                                    color: AppTheme.textTertiary,
+                                    letterSpacing: 0.5,
                                   ),
-                                ],
-                              ),
+                                ),
+                                // Time remaining chip
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: timerColor.withValues(alpha: 0.1),
+                                    borderRadius:
+                                        BorderRadius.circular(AppTheme.radiusFull),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.timer_outlined,
+                                          size: 14, color: timerColor),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        '${timeRemaining.inSeconds}s',
+                                        style: AppTheme.labelSmall.copyWith(
+                                          color: timerColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
 
                             const SizedBox(height: 24),

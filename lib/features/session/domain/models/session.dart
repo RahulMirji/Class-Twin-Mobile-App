@@ -4,6 +4,7 @@ class Session {
   final String id;
   final String joinCode;
   final String topic;
+  final String subject;
   final int totalRounds;
   final int currentRound;
   final SessionStatus status;
@@ -19,6 +20,7 @@ class Session {
     required this.id,
     required this.joinCode,
     required this.topic,
+    required this.subject,
     required this.totalRounds,
     required this.currentRound,
     required this.status,
@@ -36,6 +38,7 @@ class Session {
       id: json['id'],
       joinCode: json['join_code'],
       topic: json['topic'] ?? 'Untitled Class',
+      subject: json['subject'] ?? 'General',
       totalRounds: json['total_rounds'] ?? 1,
       currentRound: json['current_round'] ?? 0,
       status: SessionStatus.values.firstWhere(
@@ -54,6 +57,7 @@ class Session {
 
   Session copyWith({
     String? topic,
+    String? subject,
     int? totalRounds,
     int? currentRound,
     SessionStatus? status,
@@ -67,6 +71,7 @@ class Session {
       id: id,
       joinCode: joinCode,
       topic: topic ?? this.topic,
+      subject: subject ?? this.subject,
       totalRounds: totalRounds ?? this.totalRounds,
       currentRound: currentRound ?? this.currentRound,
       status: status ?? this.status,

@@ -140,7 +140,11 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
     _screenSub?.cancel();
     
     // Stop engagement tracking
-    ref.read(engagementServiceProvider).stop();
+    try {
+      ref.read(engagementServiceProvider).stop();
+    } catch (_) {
+      // ref might already be disposed, ignore
+    }
     
     super.dispose();
   }
@@ -300,6 +304,13 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
             right: 0,
             child: _buildControlBar(context),
           ),
+
+          // ─── AI Telemetry Pulsar ──────────────────────
+          Positioned(
+            bottom: 64 + MediaQuery.of(context).padding.bottom + 12,
+            right: 16,
+            child: const _AITelemetryIndicator(),
+          ),
         ],
       ),
     );
@@ -445,48 +456,100 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
 
   Widget _buildResponseOverlay(SessionStreaming streaming) {
     final question = streaming.currentQuestion!;
+    final currentIndex = streaming.currentIndex ?? 0;
+    final totalQuestions = streaming.questions?.length ?? 1;
     final options = question.options;
 
     return Positioned(
-      bottom: 64 + MediaQuery.of(context).padding.bottom,
+      bottom: 0,
       left: 0,
       right: 0,
       child: Container(
         decoration: const BoxDecoration(
           color: AppTheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 20,
+              offset: Offset(0, -5),
+            ),
+          ],
         ),
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        padding: EdgeInsets.fromLTRB(
+            24, 20, 24, 24 + MediaQuery.of(context).padding.bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Timer bar
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'QUESTION ${currentIndex + 1} OF $totalQuestions',
+                  style: AppTheme.labelSmall.copyWith(
+                    color: AppTheme.textTertiary,
+                    letterSpacing: 1.2,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'LIVE',
+                    style: AppTheme.labelSmall.copyWith(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Timer bar (visual only for now)
             Container(
-              height: 3,
-              margin: const EdgeInsets.only(bottom: 20),
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24),
+              width: double.infinity,
               decoration: BoxDecoration(
-                color: AppTheme.tertiary,
+                color: AppTheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(2),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: 0.7, // Simulated time
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
             ),
 
             // Question text
             Text(
               question.questionText,
-              style: AppTheme.headlineMedium,
+              style: AppTheme.displaySmall.copyWith(fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
 
             // Response buttons (MCQ)
             ...options.map((optionText) {
+              final isSelected = streaming.submittedResponse?.response == optionText;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: _StreamResponseButton(
                   label: optionText,
-                  color: AppTheme.tertiary,
-                  onTap: () => _submit(optionText),
+                  color: isSelected ? AppTheme.primary : AppTheme.tertiary,
+                  isSelected: isSelected,
+                  onTap: isSelected ? () {} : () => _submit(optionText),
                 ),
               );
             }),
@@ -548,8 +611,14 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          Text(label, style: AppTheme.labelMedium.copyWith(color: color)),
-          const Spacer(),
+          Expanded(
+            child: Text(
+              label,
+              style: AppTheme.labelMedium.copyWith(color: color),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
           TextButton(
             onPressed: () {
               // Undo — future implementation
@@ -580,6 +649,25 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
       ),
       child: Row(
         children: [
+          // Mic Toggle
+          StreamBuilder<bool>(
+            stream: ref.read(streamServiceProvider).micState,
+            initialData: ref.read(streamServiceProvider).isMicEnabled,
+            builder: (context, snapshot) {
+              final isEnabled = snapshot.data ?? false;
+              return _ControlButton(
+                icon: isEnabled
+                    ? PhosphorIconsBold.microphone
+                    : PhosphorIconsBold.microphoneSlash,
+                label: isEnabled ? 'Mute' : 'Unmute',
+                onTap: () => ref.read(streamServiceProvider).toggleMicrophone(),
+                color: isEnabled ? AppTheme.primary : AppTheme.textPrimary,
+              );
+            },
+          ),
+
+          const SizedBox(width: 16),
+
           // Raise Hand
           _ControlButton(
             icon: PhosphorIconsBold.handPalm,
@@ -682,11 +770,13 @@ class _StreamResponseButton extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback onTap;
+  final bool isSelected;
 
   const _StreamResponseButton({
     required this.label,
     required this.color,
     required this.onTap,
+    this.isSelected = false,
   });
 
   @override
@@ -697,12 +787,22 @@ class _StreamResponseButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: color.withValues(alpha: 0.3)),
+          side: BorderSide(
+            color: isSelected ? AppTheme.primary : color.withValues(alpha: 0.3),
+            width: isSelected ? 2 : 1,
+          ),
+          backgroundColor: isSelected ? AppTheme.primary.withValues(alpha: 0.1) : null,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           ),
         ),
-        child: Text(label, style: AppTheme.labelLarge.copyWith(color: color)),
+        child: Text(
+          label,
+          style: AppTheme.labelLarge.copyWith(
+            color: isSelected ? AppTheme.primary : color,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }
@@ -712,11 +812,13 @@ class _ControlButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final Color? color;
 
   const _ControlButton({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.color,
   });
 
   @override
@@ -725,11 +827,99 @@ class _ControlButton extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppTheme.textPrimary),
+          Icon(icon, size: 20, color: color ?? AppTheme.textPrimary),
           const SizedBox(width: 6),
-          Text(label, style: AppTheme.labelMedium),
+          Text(
+            label,
+            style: AppTheme.labelMedium.copyWith(color: color),
+          ),
         ],
       ),
     );
+  }
+}
+class _AITelemetryIndicator extends StatelessWidget {
+  const _AITelemetryIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+        border: Border.all(
+          color: AppTheme.primary.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withValues(alpha: 0.1),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // The Pulsing "Data Source"
+          Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+              color: AppTheme.primary,
+              shape: BoxShape.circle,
+            ),
+          )
+              .animate(onPlay: (c) => c.repeat())
+              .scale(
+                duration: 1.seconds,
+                begin: const Offset(1, 1),
+                end: const Offset(1.5, 1.5),
+                curve: Curves.easeOut,
+              )
+              .fadeOut(duration: 1.seconds),
+          const SizedBox(width: 8),
+          
+          // Technical Label
+          Text(
+            'AI ANALYSIS ACTIVE',
+            style: AppTheme.labelSmall.copyWith(
+              color: AppTheme.primary.withValues(alpha: 0.9),
+              letterSpacing: 0.8,
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          
+          const SizedBox(width: 8),
+          
+          // "Collecting" Data Nodes
+          Row(
+            children: List.generate(3, (index) {
+              return Container(
+                width: 2,
+                height: 2,
+                margin: const EdgeInsets.symmetric(horizontal: 1),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withValues(alpha: 0.6),
+                  shape: BoxShape.circle,
+                ),
+              )
+                  .animate(onPlay: (c) => c.repeat())
+                  .fadeOut(
+                    delay: (index * 200).ms,
+                    duration: 600.ms,
+                  )
+                  .fadeIn(
+                    delay: (index * 200).ms,
+                    duration: 600.ms,
+                  );
+            }),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 800.ms).slideX(begin: 0.5, curve: Curves.easeOutCubic);
   }
 }

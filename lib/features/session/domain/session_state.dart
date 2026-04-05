@@ -32,26 +32,32 @@ class SessionLobby extends SessionState {
 /// Session is active, question is being shown
 class SessionQuestion extends SessionState {
   final Session session;
-  final Question question;
+  final List<Question> questions;
+  final int currentIndex;
   final int roundNumber;
   final StudentResponse? submittedResponse;
   final Duration timeRemaining;
 
   const SessionQuestion({
     required this.session,
-    required this.question,
+    required this.questions,
+    this.currentIndex = 0,
     required this.roundNumber,
     this.submittedResponse,
     required this.timeRemaining,
   });
 
+  Question get currentQuestion => questions[currentIndex];
+
   SessionQuestion copyWith({
+    int? currentIndex,
     StudentResponse? submittedResponse,
     Duration? timeRemaining,
   }) {
     return SessionQuestion(
       session: session,
-      question: question,
+      questions: questions,
+      currentIndex: currentIndex ?? this.currentIndex,
       roundNumber: roundNumber,
       submittedResponse: submittedResponse ?? this.submittedResponse,
       timeRemaining: timeRemaining ?? this.timeRemaining,
@@ -89,7 +95,8 @@ class SessionStreamPending extends SessionState {
 /// Remote student and stream is live
 class SessionStreaming extends SessionState {
   final Session session;
-  final Question? currentQuestion;
+  final List<Question>? questions;
+  final int? currentIndex;
   final int? roundNumber;
   final StudentResponse? submittedResponse;
   final bool isScreenShareActive;
@@ -97,15 +104,22 @@ class SessionStreaming extends SessionState {
 
   const SessionStreaming({
     required this.session,
-    this.currentQuestion,
+    this.questions,
+    this.currentIndex,
     this.roundNumber,
     this.submittedResponse,
     this.isScreenShareActive = false,
     this.layout = StreamLayout.fullScreen,
   });
 
+  Question? get currentQuestion =>
+      (questions != null && currentIndex != null && currentIndex! < questions!.length)
+          ? questions![currentIndex!]
+          : null;
+
   SessionStreaming copyWith({
-    Question? currentQuestion,
+    List<Question>? questions,
+    int? currentIndex,
     int? roundNumber,
     StudentResponse? submittedResponse,
     bool? isScreenShareActive,
@@ -113,7 +127,8 @@ class SessionStreaming extends SessionState {
   }) {
     return SessionStreaming(
       session: session,
-      currentQuestion: currentQuestion ?? this.currentQuestion,
+      questions: questions ?? this.questions,
+      currentIndex: currentIndex ?? this.currentIndex,
       roundNumber: roundNumber ?? this.roundNumber,
       submittedResponse: submittedResponse ?? this.submittedResponse,
       isScreenShareActive: isScreenShareActive ?? this.isScreenShareActive,

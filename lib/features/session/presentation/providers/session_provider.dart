@@ -90,9 +90,9 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
   }
 
   void _subscribeToRealtime(String sessionId) {
-    _channel = Supabase.instance.client.channel('session-changes:$sessionId');
+    final client = Supabase.instance.client;
+    _channel = client.channel('session-changes:$sessionId');
 
-    // Listen for session row updates (status, streaming, round changes)
     _channel!
         .onPostgresChanges(
           event: PostgresChangeEvent.update,
@@ -105,7 +105,6 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
           ),
           callback: (payload) => _handleSessionChange(payload.newRecord),
         )
-        // Listen for new questions being inserted
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
@@ -115,9 +114,26 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
             column: 'session_id',
             value: sessionId,
           ),
-          callback: (payload) => _handleNewQuestion(payload.newRecord),
+          callback: (payload) => _handleQuestionInsert(payload.newRecord),
         )
         .subscribe();
+  }
+
+  void _handleQuestionInsert(Map<String, dynamic> record) async {
+    final sessionId = _ref.read(currentSessionIdProvider);
+    if (sessionId == null) return;
+
+    final roundNumber = record['round_number'] as int? ?? 0;
+    if (roundNumber == 0) return;
+
+    try {
+      final session = await _repo.getSession(sessionId);
+      final questions = await _fetchQuestionsWithRetry(sessionId, roundNumber);
+
+      if (questions.isNotEmpty) {
+        _transitionToQuestions(session, questions, roundNumber);
+      }
+    } catch (_) {}
   }
 
   void _handleSessionChange(Map<String, dynamic> record) async {
@@ -137,95 +153,105 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
         return;
       }
 
-      // Handle streaming state transitions for remote students
-      if (mode == StudentMode.remote) {
-        if (isStreaming) {
+      // ─── Quiz Synchronization (Multi-question Rounds) ──────
+      if (currentRound > 0) {
+        // A round is active - fetch questions with retry for replication lag
+        final questions = await _fetchQuestionsWithRetry(sessionId, currentRound);
+        
+        if (questions.isNotEmpty) {
+          // Only transition if we're not already in this specific round
           final currentState = state;
-          if (currentState is SessionStreamPending || 
-              currentState is SessionLobby ||
-              currentState is SessionWaiting) {
-            // Stream started — transition to streaming (no question yet)
-            state = SessionStreaming(session: session);
+          bool alreadyInRound = false;
+          if (currentState is SessionQuestion && currentState.roundNumber == currentRound) {
+             alreadyInRound = true;
           }
 
-          // If a new round has started, overlay the question
-          if (newStatus == 'active' && currentRound > 0) {
-            final question = await _repo.getQuestionForRound(sessionId, currentRound);
-            if (question != null) {
-              state = SessionStreaming(
-                session: session,
-                currentQuestion: question,
-                roundNumber: currentRound,
-              );
-            }
-          }
-
-          // If already streaming, keep them in streaming state
-          if (currentState is SessionStreaming && newStatus == 'active') {
-            // Don't change state — they're already watching
+          if (!alreadyInRound) {
+            _transitionToQuestions(session, questions, currentRound);
             return;
           }
+        }
+      }
+
+      // ─── Mode Specific State Transitions ───────────────────
+      if (mode == StudentMode.remote) {
+        final currentState = state;
+        if (isStreaming) {
+          if (currentState is SessionStreamPending || currentState is SessionLobby || currentState is SessionWaiting) {
+            state = SessionStreaming(session: session);
+          }
         } else {
-          // Stream stopped
-          final currentState = state;
           if (currentState is SessionStreaming) {
             state = SessionStreamPending(session);
           }
         }
-        return;
-      }
-
-      // ─── In-room students (non-remote) ─────────────────────
-      if (newStatus == 'active' && currentRound > 0) {
-        // A new round has started — fetch the question
-        final question = await _repo.getQuestionForRound(sessionId, currentRound);
-        if (question != null) {
-          state = SessionQuestion(
-            session: session,
-            question: question,
-            roundNumber: currentRound,
-            timeRemaining: Duration(seconds: question.timeLimitSeconds),
-          );
-          _startTimer(question.timeLimitSeconds);
-        }
-      } else if (newStatus == 'active') {
-        // Session started but no question yet
-        final currentState = state;
-        if (currentState is SessionLobby || currentState is SessionStreamPending) {
-          state = SessionWaiting(session: session, lastRoundNumber: 0);
+      } else {
+        // In-room students
+        if (newStatus == 'active' && currentRound == 0) {
+          final currentState = state;
+          if (currentState is SessionLobby || currentState is SessionQuestion) {
+            state = SessionWaiting(session: session, lastRoundNumber: 0);
+          }
         }
       }
     } catch (_) {}
   }
 
-  void _handleNewQuestion(Map<String, dynamic> record) async {
-    // Alternative path — react to question inserts
-    final sessionId = _ref.read(currentSessionIdProvider);
-    if (sessionId == null) return;
-    final roundNumber = record['round_number'] as int? ?? 1;
-    
-    try {
-      final session = await _repo.getSession(sessionId);
-      final question = await _repo.getQuestionForRound(sessionId, roundNumber);
-      if (question == null) return;
-      
-      final mode = _ref.read(studentModeProvider);
-      if (mode == StudentMode.remote) {
-        state = SessionStreaming(
-          session: session,
-          currentQuestion: question,
-          roundNumber: roundNumber,
-        );
-      } else {
-        state = SessionQuestion(
-          session: session,
-          question: question,
-          roundNumber: roundNumber,
-          timeRemaining: Duration(seconds: question.timeLimitSeconds),
-        );
-        _startTimer(question.timeLimitSeconds);
-      }
-    } catch (_) {}
+  void _transitionToQuestions(
+      Session session, List<Question> questions, int roundNumber) {
+    final mode = _ref.read(studentModeProvider);
+
+    // Prevent duplicate transitions if we're already on this round
+    final currentState = state;
+    if (currentState is SessionQuestion &&
+        currentState.roundNumber == roundNumber) return;
+    if (currentState is SessionStreaming &&
+        currentState.roundNumber == roundNumber &&
+        currentState.questions != null) return;
+
+    if (mode == StudentMode.remote) {
+      state = SessionStreaming(
+        session: session,
+        questions: questions,
+        currentIndex: 0,
+        roundNumber: roundNumber,
+      );
+    } else {
+      final firstQuestion = questions.first;
+      state = SessionQuestion(
+        session: session,
+        questions: questions,
+        currentIndex: 0,
+        roundNumber: roundNumber,
+        timeRemaining: Duration(seconds: firstQuestion.timeLimitSeconds),
+      );
+      _startTimer(firstQuestion.timeLimitSeconds);
+    }
+  }
+
+  /// Helper to fetch a question with a 3-step retry (200ms -> 500ms -> 1s)
+  /// Necessary to handle Supabase Postgres -> Realtime replication lag
+  /// Now fetches ALL questions for the round.
+  Future<List<Question>> _fetchQuestionsWithRetry(
+      String sessionId, int roundNumber) async {
+    final delays = [
+      const Duration(milliseconds: 200),
+      const Duration(milliseconds: 500),
+      const Duration(milliseconds: 1000),
+    ];
+
+    // Try immediately
+    var questions = await _repo.getQuestionsForRound(sessionId, roundNumber);
+    if (questions.isNotEmpty) return questions;
+
+    // Retry loop
+    for (var i = 0; i < delays.length; i++) {
+      await Future.delayed(delays[i]);
+      questions = await _repo.getQuestionsForRound(sessionId, roundNumber);
+      if (questions.isNotEmpty) return questions;
+    }
+
+    return [];
   }
 
 /*
@@ -288,7 +314,7 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
     Session? session;
 
     if (currentState is SessionQuestion) {
-      question = currentState.question;
+      question = currentState.currentQuestion;
       session = currentState.session;
     } else if (currentState is SessionStreaming) {
       question = currentState.currentQuestion;
@@ -308,13 +334,48 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
 
       if (currentState is SessionQuestion) {
         _timer?.cancel();
-        state = SessionWaiting(
-          session: session,
-          lastRoundNumber: currentState.roundNumber,
-          lastResponse: submitted,
-        );
+        
+        // Check if there are more questions in this round
+        if (currentState.currentIndex + 1 < currentState.questions.length) {
+          // Wait a second for visual feedback then move to next
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            final nextIndex = currentState.currentIndex + 1;
+            final nextQuestion = currentState.questions[nextIndex];
+            state = currentState.copyWith(
+              currentIndex: nextIndex,
+              submittedResponse: null,
+              timeRemaining: Duration(seconds: nextQuestion.timeLimitSeconds),
+            );
+            _startTimer(nextQuestion.timeLimitSeconds);
+          });
+        } else {
+          // No more questions in round
+          state = SessionWaiting(
+            session: session,
+            lastRoundNumber: currentState.roundNumber,
+            lastResponse: submitted,
+          );
+        }
       } else if (currentState is SessionStreaming) {
-        state = currentState.copyWith(submittedResponse: submitted);
+        // Handle question progression for remote students
+        if (currentState.questions != null &&
+            currentState.currentIndex != null &&
+            currentState.currentIndex! + 1 < currentState.questions!.length) {
+          
+          // Show submitted state briefly then move to next
+          state = currentState.copyWith(submittedResponse: submitted);
+          
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            final nextIndex = currentState.currentIndex! + 1;
+            state = currentState.copyWith(
+              currentIndex: nextIndex,
+              submittedResponse: null,
+            );
+          });
+        } else {
+          // Last question or single question round
+          state = currentState.copyWith(submittedResponse: submitted);
+        }
       }
     } catch (e) {
       // Handle error

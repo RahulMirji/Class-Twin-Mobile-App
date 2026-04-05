@@ -100,14 +100,32 @@ class DashboardScreen extends ConsumerWidget {
                                 const SizedBox(height: 4),
                                 Text(
                                   _getGreeting(),
-                                  style: AppTheme.displayMedium.copyWith(
-                                    letterSpacing: -0.5,
+                                  style: AppTheme.displaySmall.copyWith(
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -1.0,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          // Action Buttons
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () => context.push('/join'),
+                                style: IconButton.styleFrom(
+                                  backgroundColor: AppTheme.surfaceContainerLowest,
+                                  padding: const EdgeInsets.all(12),
+                                ),
+                                icon: Icon(
+                                  PhosphorIconsRegular.plusCircle,
+                                  color: AppTheme.primary,
+                                  size: 26,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ],
@@ -132,7 +150,7 @@ class DashboardScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const SizedBox(height: 8),
-                                    _SectionHeader(title: 'Your Tasks', onViewAll: () {}),
+                                    _SectionHeader(title: 'Your Tasks'),
                                     const SizedBox(height: 14),
                                     ...list.map((a) => _remedialCard(context, a)),
                                     const SizedBox(height: 28),
@@ -144,7 +162,7 @@ class DashboardScreen extends ConsumerWidget {
                       }),
 
                       const SizedBox(height: 8),
-                      _SectionHeader(title: 'Live Classes', onViewAll: () {}),
+                      _SectionHeader(title: 'Live Classes'),
                       const SizedBox(height: 14),
                       activeSessions.when(
                         data: (sessions) => sessions.isEmpty
@@ -168,11 +186,11 @@ class DashboardScreen extends ConsumerWidget {
 
                       const SizedBox(height: 20),
 
-                      _SectionHeader(title: 'Upcoming Classes', onViewAll: () {}),
+                      _SectionHeader(title: 'Upcoming Classes'),
                       const SizedBox(height: 14),
                       upcomingSessions.when(
                         data: (sessions) => sessions.isEmpty
-                            ? _buildEmptyState('No upcoming classes scheduled.')
+                            ? _buildEmptyState('No upcoming sessions scheduled.')
                             : Column(
                                 children: sessions.map((s) => Column(
                                   children: [
@@ -290,6 +308,16 @@ class DashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
             Text(
+              session.subject.toUpperCase(),
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
               title,
               style: const TextStyle(
                 color: Colors.white,
@@ -369,6 +397,15 @@ class DashboardScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
+            Text(
+              session.subject.toUpperCase(),
+              style: AppTheme.labelSmall.copyWith(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.0,
+              ),
+            ),
+            const SizedBox(height: 4),
             Text(title, style: AppTheme.titleLarge),
             const SizedBox(height: 20),
             SizedBox(
@@ -467,25 +504,10 @@ class DashboardScreen extends ConsumerWidget {
 
 class _SectionHeader extends StatelessWidget {
   final String title;
-  final VoidCallback? onViewAll;
-
-  const _SectionHeader({required this.title, this.onViewAll});
+  const _SectionHeader({required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: AppTheme.titleLarge),
-        if (onViewAll != null)
-          GestureDetector(
-            onTap: onViewAll,
-            child: Text(
-              'View All',
-              style: AppTheme.labelMedium.copyWith(color: AppTheme.textSecondary),
-            ),
-          ),
-      ],
-    );
+    return Text(title, style: AppTheme.titleLarge);
   }
 }

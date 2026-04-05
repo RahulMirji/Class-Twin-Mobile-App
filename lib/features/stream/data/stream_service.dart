@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:livekit_client/livekit_client.dart';
 
 /// StreamService — manages LiveKit room connection
-/// Students are subscriber-only (never publish)
+/// Now supports two-way audio (student can unmute)
 class StreamService {
   Room? _room;
   EventsListener<RoomEvent>? _listener;
@@ -13,17 +13,21 @@ class StreamService {
       StreamController<VideoTrack?>.broadcast();
   final _connectionStateController =
       StreamController<StreamConnectionState>.broadcast();
+  final _micStateController = StreamController<bool>.broadcast();
 
   Stream<VideoTrack?> get cameraTrack => _cameraTrackController.stream;
   Stream<VideoTrack?> get screenTrack => _screenTrackController.stream;
   Stream<StreamConnectionState> get connectionState =>
       _connectionStateController.stream;
+  Stream<bool> get micState => _micStateController.stream;
 
   VideoTrack? get currentCameraTrack => _currentCameraTrack;
   VideoTrack? get currentScreenTrack => _currentScreenTrack;
+  bool get isMicEnabled => _isMicEnabled;
 
   VideoTrack? _currentCameraTrack;
   VideoTrack? _currentScreenTrack;
+  bool _isMicEnabled = false;
 
   bool get isConnected =>
       _room?.connectionState == ConnectionState.connected;
@@ -68,11 +72,25 @@ class StreamService {
 
     try {
       await _room!.connect(wsUrl, token);
+      
+      // Ensure mic starts disabled by default
+      await _room!.localParticipant?.setMicrophoneEnabled(false);
+      _isMicEnabled = false;
+      _micStateController.add(false);
+      
       _connectionStateController.add(StreamConnectionState.connected);
     } catch (e) {
       _connectionStateController.add(StreamConnectionState.error);
       rethrow;
     }
+  }
+
+  Future<void> toggleMicrophone() async {
+    if (_room == null) return;
+    
+    _isMicEnabled = !_isMicEnabled;
+    await _room!.localParticipant?.setMicrophoneEnabled(_isMicEnabled);
+    _micStateController.add(_isMicEnabled);
   }
 
   Future<void> disconnect() async {
@@ -81,6 +99,8 @@ class StreamService {
     _currentScreenTrack = null;
     _cameraTrackController.add(null);
     _screenTrackController.add(null);
+    _isMicEnabled = false;
+    _micStateController.add(false);
     _listener?.dispose();
     _listener = null;
     _room = null;
@@ -92,6 +112,7 @@ class StreamService {
     _cameraTrackController.close();
     _screenTrackController.close();
     _connectionStateController.close();
+    _micStateController.close();
   }
 }
 
