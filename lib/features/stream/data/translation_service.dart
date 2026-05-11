@@ -88,7 +88,7 @@ class TranslationService {
 
   Future<void> _initTts() async {
     await _tts.setVolume(1.0);
-    await _tts.setSpeechRate(0.45); // Slightly slower for clarity
+    await _tts.setSpeechRate(0.55); // Faster for near-realtime feel
     await _tts.setPitch(1.0);
 
     _tts.setCompletionHandler(() {
