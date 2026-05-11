@@ -17,6 +17,7 @@ import 'chat_panel.dart';
 import 'hand_raise_modal.dart';
 import 'widgets/confidence_slider.dart';
 import '../../../../core/providers/system_monitor_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 /// StreamScreen — Primary screen for remote students
 /// Shows live class feed with question response overlay
@@ -48,12 +49,13 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
   }
 
   Future<void> _connectToStream() async {
+    final tr = ref.read(trProvider);
     final student = ref.read(currentStudentProvider);
     final sessionId = ref.read(currentSessionIdProvider);
 
     if (student == null || sessionId == null) {
       setState(() {
-        _connectionError = 'Missing student or session info.';
+        _connectionError = tr.get('missing_student_info');
       });
       return;
     }
@@ -79,7 +81,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
         if (state == StreamConnectionState.error) {
           setState(() {
             _isConnecting = false;
-            _connectionError = 'Connection lost. Tap to retry.';
+            _connectionError = tr.get('connection_lost_retry');
           });
         } else if (state == StreamConnectionState.connected) {
           setState(() {
@@ -127,7 +129,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
       if (mounted) {
         setState(() {
           _isConnecting = false;
-          _connectionError = 'Failed to connect: ${e.toString()}';
+          _connectionError = '${tr.get('failed_connect')}: ${e.toString()}';
         });
       }
     }
@@ -151,6 +153,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = ref.watch(trProvider);
     final sessionState = ref.watch(sessionStateProvider);
 
     SessionStreaming? streaming;
@@ -172,7 +175,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
           // ─── Main Video Area ─────────────────────────
           Positioned.fill(
             bottom: 64 + MediaQuery.of(context).padding.bottom,
-            child: _buildStreamView(streaming),
+            child: _buildStreamView(streaming, tr),
           ),
 
           // ─── Confidence Slider ───────────────────────────
@@ -258,7 +261,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
 
           // ─── Response Panel (slides up on question) ──
           if (hasQuestion && !hasSubmitted)
-            _buildResponseOverlay(streaming!),
+            _buildResponseOverlay(streaming!, tr),
 
           // ─── Submitted Response Mini Panel ─────────────
           if (hasSubmitted)
@@ -266,7 +269,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
               bottom: 64 + MediaQuery.of(context).padding.bottom + 16,
               left: 16,
               right: 16,
-              child: _buildSubmittedChip(streaming!.submittedResponse!),
+              child: _buildSubmittedChip(streaming!.submittedResponse!, tr),
             ),
 
           // ─── System Banners (Battery / Connection) ───
@@ -282,13 +285,13 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
                     if (status.isLowBattery)
                       _SystemBanner(
                         icon: PhosphorIconsFill.batteryWarning,
-                        message: 'Low battery — connect to power.',
+                        message: tr.get('low_battery'),
                         color: AppTheme.error,
                       ).animate().slideY(begin: -1, end: 0),
                     if (status.isPoorConnection)
                       _SystemBanner(
                         icon: PhosphorIconsFill.wifiSlash,
-                        message: 'Unstable connection detected.',
+                        message: tr.get('unstable_connection'),
                         color: AppTheme.error,
                       ).animate().slideY(begin: -1, end: 0),
                   ],
@@ -302,21 +305,21 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: _buildControlBar(context),
+            child: _buildControlBar(context, tr),
           ),
 
           // ─── AI Telemetry Pulsar ──────────────────────
           Positioned(
             bottom: 64 + MediaQuery.of(context).padding.bottom + 12,
             right: 16,
-            child: const _AITelemetryIndicator(),
+            child: _AITelemetryIndicator(tr: tr),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStreamView(SessionStreaming? streaming) {
+  Widget _buildStreamView(SessionStreaming? streaming, dynamic tr) {
     // Dim when question is active and not yet submitted
     final dimmed = streaming?.currentQuestion != null &&
         streaming?.submittedResponse == null;
@@ -339,7 +342,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Connecting to stream...',
+                tr.get('connecting_stream'),
                 style: AppTheme.titleMedium.copyWith(
                   color: Colors.white.withValues(alpha: 0.6),
                 ),
@@ -384,7 +387,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
                     borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                   ),
                   child: Text(
-                    'Tap to retry',
+                    tr.get('tap_retry'),
                     style: AppTheme.labelMedium.copyWith(
                       color: Colors.white.withValues(alpha: 0.6),
                     ),
@@ -434,14 +437,14 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Waiting for teacher\'s stream...',
+                tr.get('waiting_teacher_stream'),
                 style: AppTheme.titleMedium.copyWith(
                   color: Colors.white.withValues(alpha: 0.4),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'You\'re connected. Video will appear\nwhen the teacher starts streaming.',
+                tr.get('connected_wait_video'),
                 style: AppTheme.bodySmall.copyWith(
                   color: Colors.white.withValues(alpha: 0.25),
                 ),
@@ -454,7 +457,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
     );
   }
 
-  Widget _buildResponseOverlay(SessionStreaming streaming) {
+  Widget _buildResponseOverlay(SessionStreaming streaming, dynamic tr) {
     final question = streaming.currentQuestion!;
     final currentIndex = streaming.currentIndex ?? 0;
     final totalQuestions = streaming.questions?.length ?? 1;
@@ -486,7 +489,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'QUESTION ${currentIndex + 1} OF $totalQuestions',
+                  '${tr.get('question').toUpperCase()} ${currentIndex + 1} ${tr.get('of').toUpperCase()} $totalQuestions',
                   style: AppTheme.labelSmall.copyWith(
                     color: AppTheme.textTertiary,
                     letterSpacing: 1.2,
@@ -501,7 +504,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    'LIVE',
+                    tr.get('live').toUpperCase(),
                     style: AppTheme.labelSmall.copyWith(
                       color: AppTheme.primary,
                       fontWeight: FontWeight.w900,
@@ -559,7 +562,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
               TextField(
                 onSubmitted: (text) => _submit(text),
                 decoration: InputDecoration(
-                  hintText: 'Type your response...',
+                  hintText: tr.get('type_response'),
                   filled: true,
                   fillColor: AppTheme.surfaceContainerLow,
                   suffixIcon: IconButton(
@@ -575,7 +578,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
               child: TextButton(
                 onPressed: () {},
                 child: Text(
-                  'Add detail',
+                  tr.get('add_detail'),
                   style: AppTheme.bodySmall.copyWith(color: AppTheme.tertiary),
                 ),
               ),
@@ -590,7 +593,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
     ref.read(sessionStateProvider.notifier).submitResponse(responseText);
   }
 
-  Widget _buildSubmittedChip(StudentResponse response) {
+  Widget _buildSubmittedChip(StudentResponse response, dynamic tr) {
     final label = response.response;
     const color = AppTheme.tertiary;
 
@@ -624,7 +627,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
               // Undo — future implementation
             },
             child: Text(
-              'Undo',
+              tr.get('undo'),
               style: AppTheme.labelSmall.copyWith(color: AppTheme.textTertiary),
             ),
           ),
@@ -633,7 +636,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
     ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.3);
   }
 
-  Widget _buildControlBar(BuildContext context) {
+  Widget _buildControlBar(BuildContext context, dynamic tr) {
     return Container(
       height: 64 + MediaQuery.of(context).padding.bottom,
       padding: EdgeInsets.only(
@@ -659,7 +662,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
                 icon: isEnabled
                     ? PhosphorIconsBold.microphone
                     : PhosphorIconsBold.microphoneSlash,
-                label: isEnabled ? 'Mute' : 'Unmute',
+                label: isEnabled ? tr.get('mute') : tr.get('unmute'),
                 onTap: () => ref.read(streamServiceProvider).toggleMicrophone(),
                 color: isEnabled ? AppTheme.primary : AppTheme.textPrimary,
               );
@@ -671,7 +674,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
           // Raise Hand
           _ControlButton(
             icon: PhosphorIconsBold.handPalm,
-            label: 'Raise Hand',
+            label: tr.get('raise_hand'),
             onTap: () => _showHandRaise(context),
           ),
 
@@ -680,7 +683,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
           // Chat
           _ControlButton(
             icon: PhosphorIconsBold.chatDots,
-            label: 'Chat',
+            label: tr.get('chat'),
             onTap: () => _showChat(context),
           ),
 
@@ -697,7 +700,7 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
             style: TextButton.styleFrom(
               foregroundColor: AppTheme.error,
             ),
-            child: const Text('Leave'),
+            child: Text(tr.get('leave')),
           ),
         ],
       ),
@@ -839,7 +842,8 @@ class _ControlButton extends StatelessWidget {
   }
 }
 class _AITelemetryIndicator extends StatelessWidget {
-  const _AITelemetryIndicator();
+  final dynamic tr;
+  const _AITelemetryIndicator({required this.tr});
 
   @override
   Widget build(BuildContext context) {
@@ -884,7 +888,7 @@ class _AITelemetryIndicator extends StatelessWidget {
           
           // Technical Label
           Text(
-            'AI ANALYSIS ACTIVE',
+            tr.get('ai_analysis_active'),
             style: AppTheme.labelSmall.copyWith(
               color: AppTheme.primary.withValues(alpha: 0.9),
               letterSpacing: 0.8,

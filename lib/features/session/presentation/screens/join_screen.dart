@@ -7,8 +7,8 @@ import '../../../../core/theme.dart';
 import '../../domain/models/student.dart';
 import '../providers/session_provider.dart';
 import '../../domain/session_state.dart';
-
 import '../../../../core/providers/preferences_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 /// JoinScreen — Mode selection
 class JoinScreen extends ConsumerStatefulWidget {
@@ -55,6 +55,8 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = ref.watch(trProvider);
+    
     return Scaffold(
       backgroundColor: AppTheme.surface,
       body: Container(
@@ -93,13 +95,13 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                         const SizedBox(height: 32),
 
                         Text(
-                          'How are you\njoining?',
+                          tr.get('how_joining'),
                           style: AppTheme.displayMedium.copyWith(height: 1.15),
                         ).animate().fadeIn(duration: 500.ms),
 
                         const SizedBox(height: 6),
                         Text(
-                          'Session Mode',
+                          tr.get('session_mode'),
                           style: AppTheme.labelMedium.copyWith(color: AppTheme.textTertiary),
                         ),
 
@@ -108,8 +110,8 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                         // Mode card A: In Room
                         _ModeCard(
                           icon: PhosphorIconsBold.mapPin,
-                          title: "I'm in the classroom",
-                          subtitle: 'Sync with local hardware',
+                          title: tr.get('in_classroom'),
+                          subtitle: tr.get('sync_local'),
                           isSelected: _selectedMode == StudentMode.inRoom,
                           onTap: () => setState(() => _selectedMode = StudentMode.inRoom),
                         ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
@@ -119,9 +121,9 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                         // Mode card B: Remote
                         _ModeCard(
                           icon: PhosphorIconsBold.monitor,
-                          title: "I'm joining remotely",
-                          subtitle: 'Virtual learning environment',
-                          badge: 'Requires good WiFi',
+                          title: tr.get('joining_remotely'),
+                          subtitle: tr.get('virtual_env'),
+                          badge: tr.get('requires_wifi'),
                           isSelected: _selectedMode == StudentMode.remote,
                           onTap: () => setState(() => _selectedMode = StudentMode.remote),
                         ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
@@ -143,14 +145,14 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                                       color: AppTheme.onPrimary,
                                     ),
                                   )
-                                : const Text('Continue', style: TextStyle(fontSize: 16)),
+                                : Text(tr.get('continue_btn'), style: const TextStyle(fontSize: 16)),
                           ),
                         ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
 
                         const SizedBox(height: 12),
                         Center(
                           child: Text(
-                            'By joining you agree to our terms of conduct',
+                            tr.get('agree_terms'),
                             style: AppTheme.labelSmall,
                             textAlign: TextAlign.center,
                           ),

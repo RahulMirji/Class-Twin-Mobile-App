@@ -6,6 +6,7 @@ import '../../../../core/theme.dart';
 import '../../domain/models/student.dart';
 import '../../domain/session_state.dart';
 import '../providers/session_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 /// WaitingScreen — Between questions / after response
 class WaitingScreen extends ConsumerWidget {
@@ -13,6 +14,7 @@ class WaitingScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tr = ref.watch(trProvider);
     final sessionState = ref.watch(sessionStateProvider);
     final mode = ref.watch(studentModeProvider);
 
@@ -71,8 +73,8 @@ class WaitingScreen extends ConsumerWidget {
 
                         Text(
                           hasResponse
-                              ? 'Response submitted'
-                              : 'Waiting for next question...',
+                              ? tr.get('response_submitted')
+                              : tr.get('waiting_next_question'),
                           style: AppTheme.headlineMedium,
                           textAlign: TextAlign.center,
                         ).animate().fadeIn(duration: 500.ms),
@@ -80,14 +82,14 @@ class WaitingScreen extends ConsumerWidget {
                         const SizedBox(height: 10),
 
                         Text(
-                          'Your teacher will share the next question shortly.',
+                          tr.get('teacher_share_shortly'),
                           style: AppTheme.bodyMedium,
                           textAlign: TextAlign.center,
                         ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
 
                         if (hasResponse) ...[
                           const SizedBox(height: 24),
-                          _ResponseChip(response: state.lastResponse!.response),
+                          _ResponseChip(response: state.lastResponse!.response, tr: tr),
                         ],
 
                         const Spacer(flex: 3),
@@ -99,7 +101,7 @@ class WaitingScreen extends ConsumerWidget {
                               Expanded(
                                 child: _ActionButton(
                                   icon: PhosphorIconsBold.chatDots,
-                                  label: 'Chat',
+                                  label: tr.get('chat'),
                                   onTap: () {},
                                 ),
                               ),
@@ -107,7 +109,7 @@ class WaitingScreen extends ConsumerWidget {
                               Expanded(
                                 child: _ActionButton(
                                   icon: PhosphorIconsBold.handPalm,
-                                  label: 'Raise Hand',
+                                  label: tr.get('raise_hand'),
                                   onTap: () {},
                                 ),
                               ),
@@ -130,8 +132,9 @@ class WaitingScreen extends ConsumerWidget {
 
 class _ResponseChip extends StatelessWidget {
   final String response;
+  final dynamic tr;
 
-  const _ResponseChip({required this.response});
+  const _ResponseChip({required this.response, required this.tr});
 
   Color get _color {
     switch (response) {
@@ -149,11 +152,11 @@ class _ResponseChip extends StatelessWidget {
   String get _label {
     switch (response) {
       case 'got_it':
-        return 'Got It ✓';
+        return tr.get('got_it_response');
       case 'somewhat':
-        return 'Somewhat';
+        return tr.get('somewhat_response');
       case 'lost':
-        return 'Lost';
+        return tr.get('lost_response');
       default:
         return response;
     }

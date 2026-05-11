@@ -6,6 +6,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme.dart';
 import '../../../session/domain/session_state.dart';
 import '../../../session/presentation/providers/session_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 /// StreamEndedScreen — Teacher ended stream mid-session
 /// PRD Section 7.6
@@ -14,6 +15,7 @@ class StreamEndedScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tr = ref.watch(trProvider);
     final sessionState = ref.watch(sessionStateProvider);
 
     // Determine if session is still active
@@ -46,7 +48,7 @@ class StreamEndedScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               Text(
-                'Stream has ended',
+                tr.get('stream_has_ended'),
                 style: AppTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
@@ -54,7 +56,7 @@ class StreamEndedScreen extends ConsumerWidget {
               const SizedBox(height: 12),
 
               Text(
-                'Your teacher stopped the broadcast. The session may still be active.',
+                tr.get('teacher_stopped_broadcast'),
                 style: AppTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ).animate().fadeIn(delay: 400.ms, duration: 500.ms),
@@ -80,7 +82,7 @@ class StreamEndedScreen extends ConsumerWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Session is still running — you can still respond to questions',
+                          tr.get('session_still_running_respond'),
                           style: AppTheme.bodySmall,
                         ),
                       ),
@@ -103,7 +105,7 @@ class StreamEndedScreen extends ConsumerWidget {
                     }
                   },
                   child: Text(
-                    isSessionActive ? 'Continue to Session' : 'View Summary',
+                    isSessionActive ? tr.get('continue_to_session') : tr.get('view_summary'),
                   ),
                 ),
               ).animate().fadeIn(delay: 800.ms, duration: 500.ms),

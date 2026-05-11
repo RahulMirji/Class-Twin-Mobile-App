@@ -7,14 +7,15 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme.dart';
 import '../../../../core/providers/preferences_provider.dart';
 import '../../../../core/providers/auth_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  void _showComingSoon(BuildContext context) {
+  void _showComingSoon(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Feature coming soon!'),
+        content: Text(message),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMd)),
         backgroundColor: AppTheme.primary,
@@ -27,12 +28,85 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
+  void _showLanguagePicker(BuildContext context, WidgetRef ref, dynamic tr) {
+    final currentLocale = ref.read(localeProvider);
+    
+    final languages = [
+      {'code': 'en', 'name': 'English', 'native': 'English', 'initial': 'EN'},
+      {'code': 'hi', 'name': 'Hindi', 'native': 'हिंदी', 'initial': 'HI'},
+      {'code': 'kn', 'name': 'Kannada', 'native': 'ಕನ್ನಡ', 'initial': 'KN'},
+      {'code': 'te', 'name': 'Telugu', 'native': 'తెలుగు', 'initial': 'TE'},
+      {'code': 'ta', 'name': 'Tamil', 'native': 'தமிழ்', 'initial': 'TA'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: Text(
+                      tr.get('select_language'),
+                      style: AppTheme.titleLarge,
+                    ),
+                  ),
+                const Divider(),
+                ...languages.map((lang) {
+                  final isSelected = currentLocale == lang['code'];
+                  return ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppTheme.primary : AppTheme.surfaceContainerHighest,
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        lang['initial']!,
+                        style: AppTheme.titleMedium.copyWith(
+                          color: isSelected ? Colors.white : AppTheme.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    title: Text(lang['native']!, style: AppTheme.titleMedium),
+                    subtitle: Text(lang['name']!, style: AppTheme.bodySmall),
+                    trailing: isSelected 
+                        ? const Icon(PhosphorIconsBold.check, color: AppTheme.primary)
+                        : null,
+                    selected: isSelected,
+                    selectedTileColor: AppTheme.primaryContainer.withValues(alpha: 0.1),
+                    onTap: () {
+                      ref.read(localeProvider.notifier).setLocale(lang['code']!);
+                      Navigator.pop(context);
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
+        ));
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final studentName = ref.watch(studentNameProvider) ?? 'Student';
     final authState = ref.watch(authStateProvider);
     final email = authState.value?.email ?? 'No email linked';
     final initial = studentName.isNotEmpty ? studentName[0].toUpperCase() : 'S';
+    final tr = ref.watch(trProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.surface,
@@ -54,7 +128,7 @@ class ProfileScreen extends ConsumerWidget {
                       // App bar row
                       Row(
                         children: [
-                          Text('Profile', style: AppTheme.titleLarge),
+                          Text(tr.get('profile'), style: AppTheme.titleLarge),
                           const Spacer(),
                         ],
                       ),
@@ -108,7 +182,7 @@ class ProfileScreen extends ConsumerWidget {
                           HapticFeedback.lightImpact();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('Email copied to clipboard!'),
+                              content: Text(tr.get('email_copied')),
                               duration: const Duration(seconds: 2),
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMd)),
@@ -124,7 +198,7 @@ class ProfileScreen extends ConsumerWidget {
                             boxShadow: AppTheme.cardShadow,
                           ),
                           child: Text(
-                            email,
+                            email == 'No email linked' ? tr.get('no_email_linked') : email,
                             style: AppTheme.bodySmall,
                           ),
                         ),
@@ -141,29 +215,29 @@ class ProfileScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionHeader('Account Settings'),
+                  _buildSectionHeader(tr.get('account_settings')),
                   const SizedBox(height: 10),
                   _MenuTile(
                     icon: PhosphorIconsRegular.user,
-                    title: 'Personal Information',
-                    onTap: () => _showComingSoon(context),
+                    title: tr.get('personal_information'),
+                    onTap: () => _showComingSoon(context, tr.get('feature_coming_soon')),
                   ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1),
                   _MenuTile(
                     icon: PhosphorIconsRegular.shieldCheck,
-                    title: 'Security & Privacy',
-                    onTap: () => _showComingSoon(context),
+                    title: tr.get('security_privacy'),
+                    onTap: () => _showComingSoon(context, tr.get('feature_coming_soon')),
                   ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.1),
 
                   const SizedBox(height: 28),
-                  _buildSectionHeader('App Settings'),
+                  _buildSectionHeader(tr.get('app_settings')),
                   const SizedBox(height: 10),
                   _MenuTile(
                     icon: PhosphorIconsRegular.bell,
-                    title: 'Notifications',
+                    title: tr.get('notifications'),
                     trailing: Switch.adaptive(
                       value: true,
                       onChanged: (v) {},
-                      activeColor: AppTheme.primary,
+                      activeTrackColor: AppTheme.primary,
                       activeThumbColor: Colors.white,
                       inactiveThumbColor: Colors.white,
                       inactiveTrackColor: AppTheme.surfaceContainerHighest,
@@ -171,23 +245,29 @@ class ProfileScreen extends ConsumerWidget {
                   ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.1),
                   _MenuTile(
                     icon: PhosphorIconsRegular.palette,
-                    title: 'Appearance',
-                    subtitle: 'Light Mode',
-                    onTap: () => _showComingSoon(context),
+                    title: tr.get('appearance'),
+                    subtitle: tr.get('light_mode'),
+                    onTap: () => _showComingSoon(context, tr.get('feature_coming_soon')),
                   ).animate().fadeIn(delay: 600.ms).slideX(begin: 0.1),
+                  _MenuTile(
+                    icon: PhosphorIconsRegular.translate,
+                    title: tr.get('language'),
+                    subtitle: _getLanguageName(ref.read(localeProvider)),
+                    onTap: () => _showLanguagePicker(context, ref, tr),
+                  ).animate().fadeIn(delay: 650.ms).slideX(begin: 0.1),
 
                   const SizedBox(height: 28),
-                  _buildSectionHeader('Support'),
+                  _buildSectionHeader(tr.get('support')),
                   const SizedBox(height: 10),
                   _MenuTile(
                     icon: PhosphorIconsRegular.question,
-                    title: 'Help Center',
-                    onTap: () => _showComingSoon(context),
+                    title: tr.get('help_center'),
+                    onTap: () => _showComingSoon(context, tr.get('feature_coming_soon')),
                   ).animate().fadeIn(delay: 700.ms).slideX(begin: 0.1),
                   _MenuTile(
                     icon: PhosphorIconsRegular.info,
-                    title: 'About Class Twin',
-                    onTap: () => _showComingSoon(context),
+                    title: tr.get('about_class_twin'),
+                    onTap: () => _showComingSoon(context, tr.get('feature_coming_soon')),
                   ).animate().fadeIn(delay: 800.ms).slideX(begin: 0.1),
 
                   const SizedBox(height: 36),
@@ -202,7 +282,7 @@ class ProfileScreen extends ConsumerWidget {
                       },
                       icon: Icon(PhosphorIconsBold.signOut, color: AppTheme.error, size: 20),
                       label: Text(
-                        'Log Out',
+                        tr.get('log_out'),
                         style: AppTheme.labelLarge.copyWith(color: AppTheme.error),
                       ),
                       style: OutlinedButton.styleFrom(
@@ -218,7 +298,7 @@ class ProfileScreen extends ConsumerWidget {
 
                   Center(
                     child: Text(
-                      'Version 1.0.2',
+                      '${tr.get('version')} 1.0.2',
                       style: AppTheme.labelSmall,
                     ),
                   ),
@@ -230,6 +310,16 @@ class ProfileScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  String _getLanguageName(String code) {
+    switch (code) {
+      case 'hi': return 'हिंदी';
+      case 'kn': return 'ಕನ್ನಡ';
+      case 'te': return 'తెలుగు';
+      case 'ta': return 'தமிழ்';
+      default: return 'English';
+    }
   }
 
   Widget _buildSectionHeader(String title) {

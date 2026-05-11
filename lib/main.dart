@@ -55,13 +55,27 @@ void main() async {
     debugPrint('Critical Initialization Error: $e');
     debugPrint(stack.toString());
     
-    // Run minimal app to show error if possible, or just remove splash
+    // Determine helpful error context
+    final errorStr = e.toString();
+    String hint;
+    if (errorStr.contains('SocketException') || 
+        errorStr.contains('TimeoutException') ||
+        errorStr.contains('Failed host lookup')) {
+      hint = 'Please check your internet connection and try again.';
+    } else {
+      hint = 'Please restart the app. If the issue persists, try reinstalling.';
+    }
+    
+    // Run minimal app to show error
     runApp(MaterialApp(
       home: Scaffold(
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Text('Failed to start app: $e\n\nPlease check your internet connection.'),
+            child: Text(
+              'Failed to start app:\n\n$e\n\n$hint',
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       ),

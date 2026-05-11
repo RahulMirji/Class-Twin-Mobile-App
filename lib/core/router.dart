@@ -10,7 +10,6 @@ import '../features/session/presentation/screens/session_end_screen.dart';
 import '../features/session/presentation/providers/session_provider.dart';
 import '../features/session/domain/session_state.dart';
 import '../features/stream/presentation/screens/stream_screen.dart';
-import '../features/stream/presentation/screens/stream_ended_screen.dart';
 import '../features/home/presentation/screens/dashboard_screen.dart';
 import '../features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
@@ -22,7 +21,9 @@ import 'presentation/screens/main_layout.dart';
 import 'providers/preferences_provider.dart';
 import 'demo_gallery.dart';
 import 'providers/auth_provider.dart';
+import 'providers/locale_provider.dart';
 import 'theme.dart';
+import '../features/parent/presentation/screens/parent_dashboard_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
@@ -46,7 +47,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: notifier,
     initialLocation: '/',
     redirect: (context, state) {
-      final studentName = ref.read(studentNameProvider);
       final authState = ref.read(authStateProvider);
       final isOnboarding = state.matchedLocation == '/onboarding';
 
@@ -56,9 +56,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/onboarding';
       }
 
-      // 2. If user IS logged in, don't allow them to stay on onboarding
-      if (authState.value != null && isOnboarding) {
-        return '/';
+      // 2. If user IS logged in
+      if (authState.value != null) {
+        final role = authState.value?.role;
+        final isParent = role == 'parent';
+
+        // Restrict parents strictly to the parent dashboard
+        if (isParent) {
+          if (state.matchedLocation != '/parent_dashboard') {
+            return '/parent_dashboard';
+          }
+          return null;
+        }
+
+        // Restrict students from accessing parent dashboard
+        if (!isParent && state.matchedLocation == '/parent_dashboard') {
+          return '/';
+        }
+
+        // If user is logged in (and not a parent), don't allow them to stay on onboarding
+        if (isOnboarding) {
+          return '/';
+        }
       }
 
       return null;
@@ -74,6 +93,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/demo',
         builder: (context, state) => const DemoGallery(),
+      ),
+
+      // Parent Dashboard
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/parent_dashboard',
+        builder: (context, state) => const ParentDashboardScreen(),
       ),
 
       // Join — name + mode selection
@@ -169,6 +195,7 @@ class _SessionRouter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tr = ref.watch(trProvider);
     final sessionState = ref.watch(sessionStateProvider);
 
     return switch (sessionState) {
@@ -181,7 +208,7 @@ class _SessionRouter extends ConsumerWidget {
                 const CircularProgressIndicator(),
                 const SizedBox(height: 24),
                 Text(
-                  'Ending class...',
+                  tr.get('ending_class'),
                   style: AppTheme.bodyMedium.copyWith(color: AppTheme.textTertiary),
                 ),
               ],
@@ -200,7 +227,7 @@ class _SessionRouter extends ConsumerWidget {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => context.go('/'),
-                  child: const Text('Return to Dashboard'),
+                  child: Text(tr.get('return_to_dashboard')),
                 ),
               ],
             ),

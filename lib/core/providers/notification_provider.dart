@@ -12,7 +12,7 @@ class NotificationService {
 
   Future<void> init() async {
     const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/launcher_icon');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -30,7 +30,7 @@ class NotificationService {
       onDidReceiveNotificationResponse: (_) {},
     );
 
-    // flutter_timezone v5: getLocalTimezone() returns TimezoneInfo — use .identifier
+    // flutter_timezone v5: getLocalTimezone() returns TimezoneInfo
     tz.initializeTimeZones();
     final tzInfo = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(tzInfo.identifier));

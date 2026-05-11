@@ -5,6 +5,7 @@ import 'package:class_twin/core/theme.dart';
 import 'package:class_twin/features/stream/domain/models/chat_message.dart';
 import 'package:class_twin/features/stream/presentation/providers/chat_provider.dart';
 import 'package:class_twin/features/session/presentation/providers/session_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 /// ChatPanel — Bottom sheet chat drawer
 /// PRD Section 7.4
@@ -41,7 +42,7 @@ class _ChatPanelState extends ConsumerState<ChatPanel> {
 
     final student = ref.read(currentStudentProvider);
     final sessionId = ref.read(currentSessionIdProvider);
-    final isAnonymous = ref.read(chatAnonymousProvider);
+    // isAnonymous removed as it was unused locally in this method
     if (student == null || sessionId == null) return;
 
     ref.read(chatProvider.notifier).sendMessage(
@@ -67,6 +68,7 @@ class _ChatPanelState extends ConsumerState<ChatPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = ref.watch(trProvider);
     final chatState = ref.watch(chatProvider);
     final isAnonymous = ref.watch(chatAnonymousProvider);
     final student = ref.watch(currentStudentProvider);
@@ -86,19 +88,19 @@ class _ChatPanelState extends ConsumerState<ChatPanel> {
       }
     });
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.7,
-      minChildSize: 0.3,
-      maxChildSize: 0.9,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: AppTheme.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom),
+    return Padding(
+      padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
             child: Column(
               children: [
                 // Handle
@@ -120,13 +122,13 @@ class _ChatPanelState extends ConsumerState<ChatPanel> {
                   child: Row(
                     children: [
                       Text(
-                        'Class Chat',
+                        tr.get('class_chat'),
                         style: AppTheme.titleMedium,
                       ),
                       const Spacer(),
                       // Anonymous toggle
                       Text(
-                        'Anonymous',
+                        tr.get('anonymous'),
                         style: AppTheme.bodySmall.copyWith(
                           color: AppTheme.textSecondary,
                         ),
@@ -149,20 +151,20 @@ class _ChatPanelState extends ConsumerState<ChatPanel> {
                 // Message list
                 Expanded(
                   child: chatState.messages.isEmpty
-                      ? _buildEmptyChat()
-                      : _buildMessageList(chatState, student),
+                      ? _buildEmptyChat(tr)
+                      : _buildMessageList(chatState, student, tr),
                 ),
                 // Input area
-                _buildInputArea(chatState, student),
+                _buildInputArea(chatState, student, tr),
               ],
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildEmptyChat() {
+  Widget _buildEmptyChat(dynamic tr) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -174,14 +176,14 @@ class _ChatPanelState extends ConsumerState<ChatPanel> {
           ),
           const SizedBox(height: 12),
           Text(
-            'No messages yet',
+            tr.get('no_messages_yet'),
             style: AppTheme.bodyMedium.copyWith(
               color: AppTheme.textTertiary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Ask a question...',
+            tr.get('ask_question'),
             style: AppTheme.bodySmall.copyWith(
               color: AppTheme.textTertiary.withValues(alpha: 0.6),
             ),
@@ -191,7 +193,7 @@ class _ChatPanelState extends ConsumerState<ChatPanel> {
     );
   }
 
-  Widget _buildMessageList(ChatState chatState, dynamic student) {
+  Widget _buildMessageList(ChatState chatState, dynamic student, dynamic tr) {
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -202,12 +204,13 @@ class _ChatPanelState extends ConsumerState<ChatPanel> {
         return _ChatBubble(
           message: msg,
           isOwn: isOwn,
+          tr: tr,
         );
       },
     );
   }
 
-  Widget _buildInputArea(ChatState chatState, dynamic student) {
+  Widget _buildInputArea(ChatState chatState, dynamic student, dynamic tr) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: const BoxDecoration(
@@ -230,7 +233,7 @@ class _ChatPanelState extends ConsumerState<ChatPanel> {
                   controller: _messageController,
                   style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'Ask a question...',
+                    hintText: tr.get('ask_question'),
                     hintStyle:
                         AppTheme.bodyMedium.copyWith(color: AppTheme.textTertiary),
                     contentPadding:
@@ -272,8 +275,9 @@ class _ChatPanelState extends ConsumerState<ChatPanel> {
 class _ChatBubble extends StatelessWidget {
   final ChatMessage message;
   final bool isOwn;
+  final dynamic tr;
 
-  const _ChatBubble({required this.message, required this.isOwn});
+  const _ChatBubble({required this.message, required this.isOwn, required this.tr});
 
   @override
   Widget build(BuildContext context) {
@@ -300,7 +304,7 @@ class _ChatBubble extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      'TEACHER',
+                      tr.get('teacher').toUpperCase(),
                       style: AppTheme.labelSmall.copyWith(
                         color: AppTheme.onSecondary,
                         fontSize: 9,
@@ -311,7 +315,7 @@ class _ChatBubble extends StatelessWidget {
                   const SizedBox(width: 6),
                 ],
                 Text(
-                  message.isAnonymous ? 'Anonymous' : message.studentName,
+                  message.isAnonymous ? tr.get('anonymous') : message.studentName,
                   style: AppTheme.labelSmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: message.isAnonymous

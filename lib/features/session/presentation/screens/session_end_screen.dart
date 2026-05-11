@@ -7,6 +7,7 @@ import '../../../../core/theme.dart';
 import '../../domain/models/session.dart';
 import '../../domain/session_state.dart';
 import '../providers/session_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 /// SessionEndScreen — Session has ended, show summary
 class SessionEndScreen extends ConsumerWidget {
@@ -14,6 +15,7 @@ class SessionEndScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tr = ref.watch(trProvider);
     final sessionState = ref.watch(sessionStateProvider);
 
     Session? session;
@@ -70,7 +72,7 @@ class SessionEndScreen extends ConsumerWidget {
                         const SizedBox(height: 32),
 
                         Text(
-                          'Session Complete',
+                          tr.get('session_complete'),
                           style: AppTheme.displayMedium,
                           textAlign: TextAlign.center,
                         ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
@@ -78,7 +80,7 @@ class SessionEndScreen extends ConsumerWidget {
                         const SizedBox(height: 12),
 
                         Text(
-                          'Great work! Your responses have been recorded.',
+                          tr.get('great_work'),
                           style: AppTheme.bodyLarge,
                           textAlign: TextAlign.center,
                         ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
@@ -122,7 +124,7 @@ class SessionEndScreen extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                                 ),
                                 child: Text(
-                                  '${s.totalRounds} rounds completed',
+                                  '${s.totalRounds} ${tr.get('rounds_completed')}',
                                   style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w500),
                                 ),
                               ),
@@ -140,7 +142,7 @@ class SessionEndScreen extends ConsumerWidget {
                               ref.read(sessionStateProvider.notifier).leaveSession();
                               context.go('/');
                             },
-                            child: const Text('Return Home', style: TextStyle(fontSize: 16)),
+                            child: Text(tr.get('return_home'), style: const TextStyle(fontSize: 16)),
                           ),
                         ).animate().fadeIn(delay: 800.ms, duration: 500.ms),
 

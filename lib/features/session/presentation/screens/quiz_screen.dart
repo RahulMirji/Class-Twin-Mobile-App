@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:class_twin/features/session/domain/models/remedial_assignment.dart';
 import 'package:class_twin/features/session/presentation/providers/assignments_provider.dart';
 import 'package:class_twin/core/theme.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final RemedialAssignment assignment;
@@ -25,17 +26,17 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     });
   }
 
-  void _nextQuestion() {
+  void _nextQuestion(dynamic tr) {
     if (_currentQuestionIndex < widget.assignment.quizContent.questions.length - 1) {
       setState(() {
         _currentQuestionIndex++;
       });
     } else {
-      _submitQuiz();
+      _submitQuiz(tr);
     }
   }
 
-  Future<void> _submitQuiz() async {
+  Future<void> _submitQuiz(dynamic tr) async {
     setState(() => _isSubmitting = true);
 
     int correctCount = 0;
@@ -70,15 +71,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           builder: (context) => AlertDialog(
             backgroundColor: AppTheme.surfaceContainerLowest,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusXl)),
-            title: const Text('Quiz Completed!'),
+            title: Text(tr.get('quiz_completed')),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(PhosphorIconsFill.checkCircle, color: AppTheme.primary, size: 64),
                 const SizedBox(height: 16),
-                Text('You scored $score%', style: AppTheme.displayMedium),
+                Text('${tr.get('you_scored')} $score%', style: AppTheme.displayMedium),
                 const SizedBox(height: 8),
-                const Text('Great job! Your performance has been sent to your teacher.'),
+                Text(tr.get('quiz_performance_sent')),
               ],
             ),
             actions: [
@@ -89,7 +90,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                     ref.invalidate(assignedQuizzesProvider);
                     context.go('/');
                   },
-                  child: const Text('Back to Dashboard'),
+                  child: Text(tr.get('back_to_dashboard')),
                 ),
               ),
             ],
@@ -99,7 +100,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error submitting quiz: $e')),
+          SnackBar(content: Text('${tr.get('error')}: $e')),
         );
       }
     } finally {
@@ -109,6 +110,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = ref.watch(trProvider);
     final questions = widget.assignment.quizContent.questions;
     final currentQuestion = questions[_currentQuestionIndex];
     final progress = (_currentQuestionIndex + 1) / questions.length;
@@ -116,7 +118,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: AppBar(
-        title: const Text('AI Remedial Quiz'),
+        title: Text(tr.get('ai_remedial_quiz')),
         backgroundColor: AppTheme.surface,
         elevation: 0,
         leading: IconButton(
@@ -133,13 +135,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               LinearProgressIndicator(
                 value: progress,
                 backgroundColor: AppTheme.surfaceContainerHighest,
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
                 minHeight: 8,
                 borderRadius: BorderRadius.circular(4),
               ),
               const SizedBox(height: 32),
               Text(
-                'Question ${_currentQuestionIndex + 1} of ${questions.length}',
+                '${tr.get('question')} ${_currentQuestionIndex + 1} ${tr.get('of')} ${questions.length}',
                 style: AppTheme.labelMedium.copyWith(color: AppTheme.textTertiary),
               ),
               const SizedBox(height: 16),
@@ -208,7 +210,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: _answers.containsKey(_currentQuestionIndex) && !_isSubmitting
-                      ? _nextQuestion
+                      ? () => _nextQuestion(tr)
                       : null,
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusLg)),
@@ -216,7 +218,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   child: _isSubmitting
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
-                          _currentQuestionIndex == questions.length - 1 ? 'Submit Quiz' : 'Next Question',
+                          _currentQuestionIndex == questions.length - 1 ? tr.get('submit_quiz') : tr.get('next_question'),
                         ),
                 ),
               ),

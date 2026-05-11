@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme.dart';
+import '../../../../core/providers/locale_provider.dart';
 
-class QRScanScreen extends StatefulWidget {
+class QRScanScreen extends ConsumerStatefulWidget {
   const QRScanScreen({super.key});
 
   @override
-  State<QRScanScreen> createState() => _QRScanScreenState();
+  ConsumerState<QRScanScreen> createState() => _QRScanScreenState();
 }
 
-class _QRScanScreenState extends State<QRScanScreen> {
+class _QRScanScreenState extends ConsumerState<QRScanScreen> {
   bool _isScanned = false;
 
   @override
   Widget build(BuildContext context) {
+    final tr = ref.watch(trProvider);
     const double scanAreaSize = 260.0; // Consistent size for both
 
     return Scaffold(
@@ -83,7 +85,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
                   child: Transform.translate(
                     offset: Offset(0, -(scanAreaSize / 2 + 50)),
                     child: Text(
-                      'Scan the QR Code to Join',
+                      tr.get('scan_qr_code'),
                       style: AppTheme.headlineMedium.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -105,7 +107,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
                         borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                       ),
                       child: Text(
-                        'Align the code within the frame',
+                        tr.get('align_code_frame'),
                         style: AppTheme.labelSmall.copyWith(color: Colors.white.withValues(alpha: 0.6)),
                       ),
                     ).animate().fadeIn(delay: 400.ms),

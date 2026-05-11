@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme.dart';
 import '../../domain/session_state.dart';
 import '../providers/session_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 /// QuestionScreen — Comprehension check response
 class QuestionScreen extends ConsumerStatefulWidget {
@@ -43,6 +44,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = ref.watch(trProvider);
     final sessionState = ref.watch(sessionStateProvider);
 
     if (sessionState is! SessionQuestion) {
@@ -100,7 +102,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Question ${currentIndex + 1} of $totalQuestions',
+                                  '${tr.get('question')} ${currentIndex + 1} ${tr.get('of')} $totalQuestions',
                                   style: AppTheme.labelMedium.copyWith(
                                     color: AppTheme.textTertiary,
                                     letterSpacing: 0.5,
@@ -166,7 +168,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                               child: TextButton(
                                 onPressed: () => setState(() => _showDetail = !_showDetail),
                                 child: Text(
-                                  _showDetail ? 'Hide detail' : 'Add detail',
+                                  _showDetail ? tr.get('hide_detail') : tr.get('add_detail'),
                                   style: AppTheme.bodySmall.copyWith(color: AppTheme.primary),
                                 ),
                               ),
@@ -179,7 +181,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                                   controller: _detailController,
                                   maxLines: 3,
                                   decoration: InputDecoration(
-                                    hintText: 'What specifically was unclear?',
+                                    hintText: tr.get('unclear_prompt'),
                                     filled: true,
                                     fillColor: AppTheme.surfaceContainerLow,
                                     border: OutlineInputBorder(

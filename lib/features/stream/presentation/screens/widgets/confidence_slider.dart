@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../session/presentation/providers/session_provider.dart';
+import '../../../../../core/providers/locale_provider.dart';
 
 class ConfidenceSlider extends ConsumerStatefulWidget {
   const ConfidenceSlider({super.key});
@@ -39,6 +40,7 @@ class _ConfidenceSliderState extends ConsumerState<ConfidenceSlider> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = ref.watch(trProvider);
     final color = Color.lerp(Colors.redAccent, Colors.greenAccent, _value / 100)!;
 
     return Column(
@@ -48,9 +50,9 @@ class _ConfidenceSliderState extends ConsumerState<ConfidenceSlider> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text("I'm lost", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
-              Text("I got it!", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
+            children: [
+              Text(tr.get('im_lost'), style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
+              Text(tr.get('i_got_it'), style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
             ],
           ),
         ),

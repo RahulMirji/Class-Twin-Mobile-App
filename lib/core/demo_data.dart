@@ -12,6 +12,7 @@ class DemoData {
     id: 'demo-session-001',
     joinCode: 'DEMO01',
     topic: 'Introduction to Neural Networks',
+    subject: 'Machine Learning',
     totalRounds: 5,
     currentRound: 2,
     status: SessionStatus.active,
@@ -55,7 +56,8 @@ class DemoData {
   
   static SessionQuestion get questionState => SessionQuestion(
         session: session,
-        question: question,
+        questions: [question],
+        currentIndex: 0,
         roundNumber: 2,
         timeRemaining: const Duration(seconds: 22),
       );
@@ -68,7 +70,8 @@ class DemoData {
 
   static SessionStreaming get streamingState => SessionStreaming(
         session: session,
-        currentQuestion: question,
+        questions: [question],
+        currentIndex: 0,
         roundNumber: 2,
       );
 

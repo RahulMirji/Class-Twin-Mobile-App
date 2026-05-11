@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../theme.dart';
+import '../../providers/locale_provider.dart';
 
-class MainLayout extends StatelessWidget {
+class MainLayout extends ConsumerWidget {
   const MainLayout({
     super.key,
     required this.navigationShell,
@@ -19,7 +21,7 @@ class MainLayout extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       extendBody: true,
       body: navigationShell,
@@ -31,7 +33,7 @@ class MainLayout extends StatelessWidget {
   }
 }
 
-class _FloatingPillNav extends StatelessWidget {
+class _FloatingPillNav extends ConsumerWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
@@ -40,31 +42,33 @@ class _FloatingPillNav extends StatelessWidget {
     required this.onTap,
   });
 
-  static const _items = [
+  List<_NavItem> _getItems(dynamic tr) => [
     _NavItem(
       icon: PhosphorIconsRegular.house,
       activeIcon: PhosphorIconsFill.house,
-      label: 'Home',
+      label: tr.get('nav_home'),
     ),
     _NavItem(
       icon: PhosphorIconsRegular.bookBookmark,
       activeIcon: PhosphorIconsFill.bookBookmark,
-      label: 'Notes',
+      label: tr.get('nav_notes'),
     ),
     _NavItem(
       icon: PhosphorIconsRegular.trophy,
       activeIcon: PhosphorIconsFill.trophy,
-      label: 'Leaderboard',
+      label: tr.get('nav_leaderboard'),
     ),
     _NavItem(
       icon: PhosphorIconsRegular.user,
       activeIcon: PhosphorIconsFill.user,
-      label: 'Profile',
+      label: tr.get('nav_profile'),
     ),
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tr = ref.watch(trProvider);
+    final items = _getItems(tr);
     final bottomPad = MediaQuery.of(context).padding.bottom;
     return Container(
       color: Colors.transparent,
@@ -90,8 +94,8 @@ class _FloatingPillNav extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(_items.length, (index) {
-            final item = _items[index];
+          children: List.generate(items.length, (index) {
+            final item = items[index];
             final isActive = currentIndex == index;
             return _NavButton(
               item: item,

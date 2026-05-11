@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme.dart';
+import '../../../../core/providers/locale_provider.dart';
 import 'qr_scan_screen.dart';
 
 /// HomeScreen — Enter session code to join
@@ -43,6 +44,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = ref.watch(trProvider);
+    
     return Scaffold(
       backgroundColor: AppTheme.surface,
       body: Container(
@@ -61,7 +64,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         const SizedBox(height: 56),
 
                         Text(
-                          'Join Session',
+                          tr.get('join_session'),
                           style: AppTheme.displayLarge.copyWith(
                             color: AppTheme.textPrimary,
                             letterSpacing: -0.8,
@@ -71,7 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         const SizedBox(height: 8),
 
                         Text(
-                          'Enter your session code to join the class.',
+                          tr.get('enter_session_code'),
                           style: AppTheme.bodyLarge,
                         ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
 
@@ -89,7 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'SESSION CODE',
+                                tr.get('session_code_label'),
                                 style: AppTheme.labelSmall.copyWith(
                                   color: AppTheme.textTertiary,
                                   letterSpacing: 1.2,
@@ -150,7 +153,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text('Join Session', style: TextStyle(fontSize: 16)),
+                                Text(tr.get('join_session'), style: const TextStyle(fontSize: 16)),
                                 const SizedBox(width: 10),
                                 Icon(
                                   PhosphorIconsBold.arrowRight,

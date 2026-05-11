@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme.dart';
-
+import '../../../../core/providers/locale_provider.dart';
 import 'package:class_twin/features/session/presentation/providers/leaderboard_provider.dart';
 
 class LeaderboardScreen extends ConsumerWidget {
@@ -11,12 +11,13 @@ class LeaderboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tr = ref.watch(trProvider);
     final leaderboardAsync = ref.watch(leaderboardProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: AppBar(
-        title: const Text('Live Leaderboard'),
+        title: Text(tr.get('live_leaderboard')),
         backgroundColor: AppTheme.surface,
         elevation: 0,
         centerTitle: false,
@@ -29,7 +30,7 @@ class LeaderboardScreen extends ConsumerWidget {
       ),
       body: leaderboardAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => Center(child: Text('${tr.get('error')}: $err')),
         data: (students) {
 
           return CustomScrollView(
@@ -82,7 +83,7 @@ class LeaderboardScreen extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              '${student['score']} pts',
+                              '${student['score']} ${tr.get('pts')}',
                               style: AppTheme.labelLarge.copyWith(
                                 color: AppTheme.textSecondary,
                                 fontWeight: FontWeight.bold,

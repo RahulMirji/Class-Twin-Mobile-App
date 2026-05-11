@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/providers/auth_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 enum AuthMode { login, register, forgotPassword }
 
@@ -22,7 +23,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _childEmailController = TextEditingController();
 
+  String _selectedRole = 'student';
   bool _obscurePassword = true;
 
   @override
@@ -30,6 +33,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _childEmailController.dispose();
     super.dispose();
   }
 
@@ -40,7 +44,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     });
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit(dynamic tr) async {
     if (!_formKey.currentState!.validate()) return;
     
     final email = _emailController.text.trim();
@@ -49,18 +53,36 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     try {
       if (_mode == AuthMode.login) {
-        await ref.read(authStateProvider.notifier).signInWithEmail(email, password);
+        try {
+          await ref.read(authStateProvider.notifier).signInParent(email, password);
+        } catch (_) {
+          await ref.read(authStateProvider.notifier).signInWithEmail(email, password);
+        }
       } else if (_mode == AuthMode.register) {
-        await ref.read(authStateProvider.notifier).signUpWithEmail(name, email, password);
+        if (_selectedRole == 'parent') {
+          await ref.read(authStateProvider.notifier).signUpParent(
+            name,
+            email,
+            password,
+            _childEmailController.text.trim(),
+          );
+        } else {
+          await ref.read(authStateProvider.notifier).signUpWithEmail(
+            name, 
+            email, 
+            password,
+            role: 'student',
+          );
+        }
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created! Logging you in...')),
+          SnackBar(content: Text(tr.get('account_created_login') ?? 'Account created. Please log in.')),
         );
       } else if (_mode == AuthMode.forgotPassword) {
         await ref.read(authStateProvider.notifier).resetPassword(email);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password reset email sent!')),
+          SnackBar(content: Text(tr.get('password_reset_sent'))),
         );
         _switchMode(AuthMode.login);
         return;
@@ -74,27 +96,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('AuthException', 'Error'))),
+        SnackBar(content: Text(e.toString().replaceAll('AuthException', tr.get('error')))),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final tr = ref.watch(trProvider);
     final authState = ref.watch(authStateProvider);
     final isLoading = authState.isLoading;
 
     final title = _mode == AuthMode.login 
-        ? 'Welcome Back' 
+        ? tr.get('welcome_back') 
         : _mode == AuthMode.register 
-            ? 'Join Class Twin' 
-            : 'Reset Password';
+            ? tr.get('join_class_twin') 
+            : tr.get('reset_password');
 
     final subtitle = _mode == AuthMode.login 
-        ? 'Log in to your account to continue' 
+        ? tr.get('login_to_continue') 
         : _mode == AuthMode.register 
-            ? 'Create an account to join the classroom' 
-            : 'Enter your email to receive a reset link';
+            ? tr.get('create_account_join') 
+            : tr.get('enter_email_reset');
 
     return Scaffold(
       backgroundColor: AppTheme.surface,
@@ -165,24 +188,67 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
                         // Form fields
                         if (_mode == AuthMode.register) ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: RadioListTile<String>(
+                                  title: Text(tr.get('student') ?? 'Student', style: AppTheme.bodyMedium),
+                                  value: 'student',
+                                  groupValue: _selectedRole,
+                                  contentPadding: EdgeInsets.zero,
+                                  onChanged: (v) => setState(() => _selectedRole = v!),
+                                  activeColor: AppTheme.primary,
+                                ),
+                              ),
+                              Expanded(
+                                child: RadioListTile<String>(
+                                  title: Text(tr.get('parent') ?? 'Parent', style: AppTheme.bodyMedium),
+                                  value: 'parent',
+                                  groupValue: _selectedRole,
+                                  contentPadding: EdgeInsets.zero,
+                                  onChanged: (v) => setState(() => _selectedRole = v!),
+                                  activeColor: AppTheme.primary,
+                                ),
+                              ),
+                            ],
+                          ).animate().fadeIn(),
+                          const SizedBox(height: 14),
+
                           _buildInput(
                             controller: _nameController,
-                            label: 'Full Name',
+                            label: tr.get('full_name'),
                             icon: PhosphorIconsRegular.user,
                             enabled: !isLoading,
                             textCapitalization: TextCapitalization.words,
-                            validator: (v) => v!.isEmpty ? 'Name is required' : null,
+                            validator: (v) => v!.isEmpty ? tr.get('name_required') : null,
                           ).animate().fadeIn(),
                           const SizedBox(height: 14),
+
+                          if (_selectedRole == 'parent') ...[
+                            _buildInput(
+                              controller: _childEmailController,
+                              label: tr.get('child_email') ?? "Child's Email",
+                              icon: PhosphorIconsRegular.student,
+                              enabled: !isLoading,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (v) {
+                                if (_selectedRole == 'parent' && (v == null || v.isEmpty || !v.contains('@'))) {
+                                  return tr.get('valid_email_required') ?? "Valid email required";
+                                }
+                                return null;
+                              },
+                            ).animate().fadeIn(),
+                            const SizedBox(height: 14),
+                          ],
                         ],
 
                         _buildInput(
                           controller: _emailController,
-                          label: 'Email Address',
+                          label: tr.get('email_address'),
                           icon: PhosphorIconsRegular.envelope,
                           enabled: !isLoading,
                           keyboardType: TextInputType.emailAddress,
-                          validator: (v) => !v!.contains('@') ? 'Please enter a valid email' : null,
+                          validator: (v) => !v!.contains('@') ? tr.get('valid_email_required') : null,
                         ).animate().fadeIn(delay: 100.ms),
 
                         const SizedBox(height: 14),
@@ -190,7 +256,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         if (_mode != AuthMode.forgotPassword) ...[
                           _buildInput(
                             controller: _passwordController,
-                            label: 'Password',
+                            label: tr.get('password'),
                             icon: PhosphorIconsRegular.lockKey,
                             enabled: !isLoading,
                             obscureText: _obscurePassword,
@@ -202,7 +268,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               ),
                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
-                            validator: (v) => v!.length < 6 ? 'Password must be at least 6 characters' : null,
+                            validator: (v) => v!.length < 6 ? tr.get('password_length_required') : null,
                           ).animate().fadeIn(delay: 200.ms),
                         ],
 
@@ -212,7 +278,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             child: TextButton(
                               onPressed: () => _switchMode(AuthMode.forgotPassword),
                               child: Text(
-                                'Forgot Password?',
+                                tr.get('forgot_password'),
                                 style: AppTheme.labelMedium.copyWith(color: AppTheme.primary),
                               ),
                             ),
@@ -225,7 +291,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           width: double.infinity,
                           height: 58,
                           child: ElevatedButton(
-                            onPressed: isLoading ? null : _submit,
+                            onPressed: isLoading ? null : () => _submit(tr),
                             child: isLoading
                                 ? const SizedBox(
                                     height: 22,
@@ -237,10 +303,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                   )
                                 : Text(
                                     _mode == AuthMode.login 
-                                        ? 'Log In' 
+                                        ? tr.get('log_in') 
                                         : _mode == AuthMode.register 
-                                            ? 'Sign Up' 
-                                            : 'Send Reset Link',
+                                            ? tr.get('sign_up') 
+                                            : tr.get('send_reset_link'),
                                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                                   ),
                           ),
@@ -253,13 +319,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                _mode == AuthMode.login ? "Don't have an account?" : "Already have an account?",
+                                _mode == AuthMode.login ? tr.get('dont_have_account') : tr.get('already_have_account'),
                                 style: AppTheme.bodyMedium,
                               ),
                               TextButton(
                                 onPressed: () => _switchMode(_mode == AuthMode.login ? AuthMode.register : AuthMode.login),
                                 child: Text(
-                                  _mode == AuthMode.login ? "Sign Up" : "Log In",
+                                  _mode == AuthMode.login ? tr.get('sign_up') : tr.get('log_in'),
                                   style: AppTheme.labelLarge.copyWith(color: AppTheme.primary),
                                 ),
                               ),

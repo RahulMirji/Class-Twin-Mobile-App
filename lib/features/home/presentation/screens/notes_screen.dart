@@ -6,12 +6,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme.dart';
 import '../providers/materials_provider.dart';
 import '../../domain/models/study_material.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 class NotesScreen extends ConsumerWidget {
   const NotesScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tr = ref.watch(trProvider);
     final materialsAsync = ref.watch(materialsProvider);
 
     return Scaffold(
@@ -29,7 +31,7 @@ class NotesScreen extends ConsumerWidget {
               titlePadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               centerTitle: false,
               title: Text(
-                'Study Notes',
+                tr.get('study_notes'),
                 style: AppTheme.displaySmall.copyWith(color: AppTheme.textPrimary),
               ),
               background: Container(color: AppTheme.surface),
@@ -39,8 +41,8 @@ class NotesScreen extends ConsumerWidget {
           // ─── Content ─────────────────────────────────────────
           materialsAsync.when(
             data: (materials) => materials.isEmpty
-                ? const SliverFillRemaining(
-                    child: _EmptyNotesState(),
+                ? SliverFillRemaining(
+                    child: _EmptyNotesState(tr: tr),
                   )
                 : SliverPadding(
                     padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
@@ -50,7 +52,7 @@ class NotesScreen extends ConsumerWidget {
                           final material = materials[index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
-                            child: _NoteCard(material: material)
+                            child: _NoteCard(material: material, tr: tr)
                                 .animate()
                                 .fadeIn(delay: (index * 50).ms, duration: 400.ms)
                                 .slideY(begin: 0.05, end: 0),
@@ -64,7 +66,7 @@ class NotesScreen extends ConsumerWidget {
               child: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
             ),
             error: (err, stack) => SliverFillRemaining(
-              child: Center(child: Text('Error: $err')),
+              child: Center(child: Text('${tr.get('error')}: $err')),
             ),
           ),
         ],
@@ -75,8 +77,9 @@ class NotesScreen extends ConsumerWidget {
 
 class _NoteCard extends StatelessWidget {
   final StudyMaterial material;
+  final dynamic tr;
 
-  const _NoteCard({required this.material});
+  const _NoteCard({required this.material, required this.tr});
 
   IconData _getIcon() {
     switch (material.fileExtension) {
@@ -165,7 +168,7 @@ class _NoteCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        material.topic ?? 'General Topic',
+                        material.topic ?? tr.get('general_topic'),
                         style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
                       ),
                     ],
@@ -191,7 +194,8 @@ class _NoteCard extends StatelessWidget {
 }
 
 class _EmptyNotesState extends StatelessWidget {
-  const _EmptyNotesState();
+  final dynamic tr;
+  const _EmptyNotesState({required this.tr});
 
   @override
   Widget build(BuildContext context) {
@@ -206,12 +210,12 @@ class _EmptyNotesState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'No notes uploaded yet',
+            tr.get('no_notes_uploaded'),
             style: AppTheme.titleLarge.copyWith(color: AppTheme.textTertiary),
           ),
           const SizedBox(height: 8),
           Text(
-            'Your teacher will share study materials here.',
+            tr.get('teacher_share_materials'),
             style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
           ),
         ],

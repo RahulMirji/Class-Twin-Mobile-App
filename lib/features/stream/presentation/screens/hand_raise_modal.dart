@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme.dart';
 import '../providers/hand_raise_provider.dart';
 import '../../../session/presentation/providers/session_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 /// HandRaiseModal — Modal overlay for raising/lowering hand
 /// PRD Section 7.5
@@ -13,6 +14,7 @@ class HandRaiseModal extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tr = ref.watch(trProvider);
     final handState = ref.watch(handRaiseProvider);
     final student = ref.watch(currentStudentProvider);
     final sessionId = ref.watch(currentSessionIdProvider);
@@ -60,7 +62,7 @@ class HandRaiseModal extends ConsumerWidget {
 
             // Title
             Text(
-              handState.isRaised ? 'Your hand is raised' : 'Raise your hand',
+              handState.isRaised ? tr.get('hand_raised') : tr.get('raise_hand'),
               style: AppTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
@@ -70,8 +72,8 @@ class HandRaiseModal extends ConsumerWidget {
             // Description
             Text(
               handState.isRaised
-                  ? 'Waiting for your teacher to respond'
-                  : 'Your teacher will see this on their dashboard',
+                  ? tr.get('waiting_teacher_respond')
+                  : tr.get('teacher_see_dashboard'),
               style: AppTheme.bodySmall.copyWith(
                 color: AppTheme.textSecondary,
               ),
@@ -104,7 +106,7 @@ class HandRaiseModal extends ConsumerWidget {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Lower Hand'),
+                          : Text(tr.get('lower_hand')),
                     )
                   : ElevatedButton(
                       onPressed: handState.isLoading ||
@@ -136,7 +138,7 @@ class HandRaiseModal extends ConsumerWidget {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Raise Hand'),
+                          : Text(tr.get('raise_hand')),
                     ),
             ),
 
@@ -146,7 +148,7 @@ class HandRaiseModal extends ConsumerWidget {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                handState.isRaised ? 'Close' : 'Cancel',
+                handState.isRaised ? tr.get('close') : tr.get('cancel'),
                 style: AppTheme.bodySmall.copyWith(
                   color: AppTheme.textSecondary,
                 ),

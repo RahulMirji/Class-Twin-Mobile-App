@@ -204,10 +204,14 @@ class SessionStateNotifier extends StateNotifier<SessionState> {
     // Prevent duplicate transitions if we're already on this round
     final currentState = state;
     if (currentState is SessionQuestion &&
-        currentState.roundNumber == roundNumber) return;
+        currentState.roundNumber == roundNumber) {
+      return;
+    }
     if (currentState is SessionStreaming &&
         currentState.roundNumber == roundNumber &&
-        currentState.questions != null) return;
+        currentState.questions != null) {
+      return;
+    }
 
     if (mode == StudentMode.remote) {
       state = SessionStreaming(

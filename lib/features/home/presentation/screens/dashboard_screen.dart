@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:class_twin/core/theme.dart';
 import 'package:class_twin/core/providers/preferences_provider.dart';
 import 'package:class_twin/core/providers/notification_provider.dart';
+import 'package:class_twin/core/providers/locale_provider.dart';
 import 'package:class_twin/features/session/presentation/providers/session_list_provider.dart';
 import 'package:class_twin/features/session/presentation/providers/assignments_provider.dart';
 import 'package:class_twin/features/session/domain/models/remedial_assignment.dart';
@@ -12,7 +13,7 @@ import 'package:class_twin/features/session/domain/models/remedial_assignment.da
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
-  void _showReminderDialog(BuildContext context, WidgetRef ref, String title) {
+  void _showReminderDialog(BuildContext context, WidgetRef ref, String title, dynamic tr) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -22,17 +23,17 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             Icon(PhosphorIconsFill.bellSimple, color: AppTheme.primary, size: 28),
             const SizedBox(width: 12),
-            const Text('Reminder Set!'),
+            Text(tr.get('reminder_set')),
           ],
         ),
         content: Text(
-          'We will notify you before "$title" starts.',
+          '${tr.get('we_will_notify')} "$title" ${tr.get('starts')}',
           style: AppTheme.bodyLarge,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Got it'),
+            child: Text(tr.get('got_it')),
           ),
         ],
       ),
@@ -41,22 +42,23 @@ class DashboardScreen extends ConsumerWidget {
     final notificationService = ref.read(notificationServiceProvider);
     notificationService.scheduleNotification(
       id: title.hashCode,
-      title: 'Class Starting Soon!',
-      body: '$title is about to begin. Join now!',
+      title: tr.get('class_starting_soon'),
+      body: '$title ${tr.get('about_to_begin')}',
       scheduledDate: DateTime.now().add(const Duration(seconds: 5)),
     );
   }
 
-  String _getGreeting() {
+  String _getGreeting(dynamic tr) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hour < 12) return tr.get('good_morning');
+    if (hour < 17) return tr.get('good_afternoon');
+    return tr.get('good_evening');
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final studentName = ref.watch(studentNameProvider) ?? 'Student';
+    final tr = ref.watch(trProvider);
+    final studentName = ref.watch(studentNameProvider) ?? tr.get('student');
     final activeSessions = ref.watch(activeSessionsProvider);
     final upcomingSessions = ref.watch(upcomingSessionsProvider);
 
@@ -91,7 +93,7 @@ class DashboardScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Hello, $studentName',
+                                  '${tr.get('hello')}, $studentName',
                                   style: AppTheme.bodyMedium.copyWith(
                                     color: AppTheme.textSecondary,
                                     fontWeight: FontWeight.w500,
@@ -99,7 +101,7 @@ class DashboardScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  _getGreeting(),
+                                  _getGreeting(tr),
                                   style: AppTheme.displaySmall.copyWith(
                                     color: AppTheme.textPrimary,
                                     fontWeight: FontWeight.w900,
@@ -150,9 +152,9 @@ class DashboardScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const SizedBox(height: 8),
-                                    _SectionHeader(title: 'Your Tasks'),
+                                    _SectionHeader(title: tr.get('your_tasks')),
                                     const SizedBox(height: 14),
-                                    ...list.map((a) => _remedialCard(context, a)),
+                                    ...list.map((a) => _remedialCard(context, a, tr)),
                                     const SizedBox(height: 28),
                                   ],
                                 ),
@@ -162,15 +164,15 @@ class DashboardScreen extends ConsumerWidget {
                       }),
 
                       const SizedBox(height: 8),
-                      _SectionHeader(title: 'Live Classes'),
+                      _SectionHeader(title: tr.get('live_classes')),
                       const SizedBox(height: 14),
                       activeSessions.when(
                         data: (sessions) => sessions.isEmpty
-                            ? _buildEmptyState('No live classes at the moment.')
+                            ? _buildEmptyState(tr.get('no_live_classes'))
                             : Column(
                                 children: sessions.map((s) => Column(
                                   children: [
-                                    _sessionCard(context, ref, s, isLive: true),
+                                    _sessionCard(context, ref, s, isLive: true, tr: tr),
                                     const SizedBox(height: 14),
                                   ],
                                 )).toList(),
@@ -181,20 +183,20 @@ class DashboardScreen extends ConsumerWidget {
                             child: CircularProgressIndicator(color: AppTheme.primary),
                           ),
                         ),
-                        error: (e, _) => Text('Error: $e'),
+                        error: (e, _) => Text('${tr.get('error')}: $e'),
                       ),
 
                       const SizedBox(height: 20),
 
-                      _SectionHeader(title: 'Upcoming Classes'),
+                      _SectionHeader(title: tr.get('upcoming_classes')),
                       const SizedBox(height: 14),
                       upcomingSessions.when(
                         data: (sessions) => sessions.isEmpty
-                            ? _buildEmptyState('No upcoming sessions scheduled.')
+                            ? _buildEmptyState(tr.get('no_upcoming_classes'))
                             : Column(
                                 children: sessions.map((s) => Column(
                                   children: [
-                                    _sessionCard(context, ref, s, isLive: false),
+                                    _sessionCard(context, ref, s, isLive: false, tr: tr),
                                     const SizedBox(height: 14),
                                   ],
                                 )).toList(),
@@ -205,7 +207,7 @@ class DashboardScreen extends ConsumerWidget {
                             child: CircularProgressIndicator(color: AppTheme.primary),
                           ),
                         ),
-                        error: (e, _) => Text('Error: $e'),
+                        error: (e, _) => Text('${tr.get('error')}: $e'),
                       ),
                     ],
                   ),
@@ -254,10 +256,11 @@ class DashboardScreen extends ConsumerWidget {
     WidgetRef ref,
     dynamic session, {
     required bool isLive,
+    required dynamic tr,
   }) {
     final title = session.topic;
     final sessionCode = session.joinCode;
-    final time = isLive ? 'Live Now' : 'Scheduled';
+    final time = isLive ? tr.get('live_now') : tr.get('scheduled');
 
     if (isLive) {
       // Active/live card — warm gradient fill
@@ -291,9 +294,9 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Text(
-                        'Live Now',
-                        style: TextStyle(
+                      Text(
+                        tr.get('live_now'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -328,7 +331,7 @@ class DashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Code: $sessionCode',
+              '${tr.get('code')}: $sessionCode',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.75),
                 fontSize: 13,
@@ -349,9 +352,9 @@ class DashboardScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                   ),
                 ),
-                child: const Text(
-                  'Join Live Course',
-                  style: TextStyle(
+                child: Text(
+                  tr.get('join_live_course'),
+                  style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -391,7 +394,7 @@ class DashboardScreen extends ConsumerWidget {
                 ),
                 const Spacer(),
                 Text(
-                  'Code: $sessionCode',
+                  '${tr.get('code')}: $sessionCode',
                   style: AppTheme.labelSmall.copyWith(color: AppTheme.textTertiary),
                 ),
               ],
@@ -412,7 +415,7 @@ class DashboardScreen extends ConsumerWidget {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () => _showReminderDialog(context, ref, title),
+                onPressed: () => _showReminderDialog(context, ref, title, tr),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryContainer,
                   foregroundColor: AppTheme.primary,
@@ -421,9 +424,9 @@ class DashboardScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                   ),
                 ),
-                child: const Text(
-                  'Remind Me',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                child: Text(
+                  tr.get('remind_me'),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
               ),
             ),
@@ -433,7 +436,7 @@ class DashboardScreen extends ConsumerWidget {
     }
   }
 
-  Widget _remedialCard(BuildContext context, RemedialAssignment assignment) {
+  Widget _remedialCard(BuildContext context, RemedialAssignment assignment, dynamic tr) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
@@ -456,22 +459,22 @@ class DashboardScreen extends ConsumerWidget {
                 child: const Icon(PhosphorIconsFill.lightning, color: Colors.white, size: 18),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Recommended For You',
-                  style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
+                  tr.get('recommended_for_you'),
+                  style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            'AI Personalized Quiz',
-            style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+          Text(
+            tr.get('ai_personalized_quiz'),
+            style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            'Based on your recent performance. Focused on: ${assignment.weaknessesTargeted.join(', ')}',
+            '${tr.get('based_on_performance')} ${assignment.weaknessesTargeted.join(', ')}',
             style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 14, height: 1.4),
           ),
           const SizedBox(height: 24),
@@ -488,9 +491,9 @@ class DashboardScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                 ),
               ),
-              child: const Text(
-                'Start Quiz Now',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              child: Text(
+                tr.get('start_quiz_now'),
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
               ),
             ),
           ),

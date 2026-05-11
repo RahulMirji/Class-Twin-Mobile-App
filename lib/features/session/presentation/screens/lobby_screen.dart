@@ -7,6 +7,7 @@ import '../../domain/models/session.dart';
 import '../../domain/models/student.dart';
 import '../../domain/session_state.dart';
 import '../providers/session_provider.dart';
+import '../../../../core/providers/locale_provider.dart';
 
 /// LobbyScreen — Waiting for session to start
 class LobbyScreen extends ConsumerWidget {
@@ -14,6 +15,7 @@ class LobbyScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tr = ref.watch(trProvider);
     final sessionState = ref.watch(sessionStateProvider);
     final mode = ref.watch(studentModeProvider);
     final isRemote = mode == StudentMode.remote;
@@ -72,7 +74,7 @@ class LobbyScreen extends ConsumerWidget {
                         const SizedBox(height: 32),
 
                         Text(
-                          isRemote ? 'Stream starting soon.' : 'Waiting for class...',
+                          isRemote ? tr.get('stream_starting_soon') : tr.get('waiting_for_class'),
                           style: AppTheme.displaySmall,
                           textAlign: TextAlign.center,
                         ).animate().fadeIn(duration: 600.ms),
@@ -81,8 +83,8 @@ class LobbyScreen extends ConsumerWidget {
 
                         Text(
                           isRemote
-                              ? 'Your teacher will go live shortly.'
-                              : 'Your teacher will start the session soon.',
+                              ? tr.get('teacher_go_live_shortly')
+                              : tr.get('teacher_start_soon'),
                           style: AppTheme.bodyMedium,
                           textAlign: TextAlign.center,
                         ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
@@ -102,7 +104,7 @@ class LobbyScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'SESSION TOPIC',
+                                tr.get('session_topic_label'),
                                 style: AppTheme.labelSmall.copyWith(
                                   letterSpacing: 1.2,
                                   color: AppTheme.textTertiary,
@@ -119,14 +121,14 @@ class LobbyScreen extends ConsumerWidget {
                                 children: [
                                   _InfoChip(
                                     icon: PhosphorIconsRegular.listNumbers,
-                                    label: '${s.totalRounds} rounds',
+                                    label: '${s.totalRounds} ${tr.get('rounds')}',
                                   ),
                                   const SizedBox(width: 10),
                                   _InfoChip(
                                     icon: isRemote
                                         ? PhosphorIconsRegular.monitor
                                         : PhosphorIconsRegular.mapPin,
-                                    label: isRemote ? 'Remote' : 'In Room',
+                                    label: isRemote ? tr.get('remote') : tr.get('in_room'),
                                   ),
                                 ],
                               ),
