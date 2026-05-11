@@ -102,7 +102,9 @@ class StreamService {
     _isRemoteAudioMuted = true;
     for (final participant in _room!.remoteParticipants.values) {
       for (final pub in participant.audioTrackPublications) {
-        pub.enabled = false;
+        if (pub.track != null) {
+          pub.track!.mediaStreamTrack.enabled = false;
+        }
       }
     }
   }
@@ -113,7 +115,9 @@ class StreamService {
     _isRemoteAudioMuted = false;
     for (final participant in _room!.remoteParticipants.values) {
       for (final pub in participant.audioTrackPublications) {
-        pub.enabled = true;
+        if (pub.track != null) {
+          pub.track!.mediaStreamTrack.enabled = true;
+        }
       }
     }
   }
