@@ -154,7 +154,7 @@ class ParentDashboardScreen extends ConsumerWidget {
                                         borderRadius: BorderRadius.circular(20),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppTheme.shadow.withValues(alpha: 0.05),
+                                            color: const Color(0xFF1A1A1A).withValues(alpha: 0.05),
                                             blurRadius: 4,
                                             offset: const Offset(0, 2),
                                           )
@@ -205,13 +205,13 @@ class ParentDashboardScreen extends ConsumerWidget {
                                       children: [
                                         Expanded(child: _buildMetricCard(context, 'Grade', performance['grade']?.toString() ?? 'N/A', PhosphorIconsRegular.graduationCap, AppTheme.primary)),
                                         const SizedBox(width: 12),
-                                        Expanded(child: _buildMetricCard(context, 'Attendance', '${attendance['percentage'] ?? 0}%', PhosphorIconsRegular.calendarCheck, AppTheme.success)),
+                                        Expanded(child: _buildMetricCard(context, 'Attendance', '${attendance['percentage'] ?? 0}%', PhosphorIconsRegular.calendarCheck, AppTheme.responseGotIt)),
                                       ],
                                     ),
                                     const SizedBox(height: 12),
                                     Row(
                                       children: [
-                                        Expanded(child: _buildMetricCard(context, 'Avg Score', '${performance['avgScore'] ?? 0}%', PhosphorIconsRegular.chartLineUp, AppTheme.warning)),
+                                        Expanded(child: _buildMetricCard(context, 'Avg Score', '${performance['avgScore'] ?? 0}%', PhosphorIconsRegular.chartLineUp, AppTheme.responseSomewhat)),
                                         const SizedBox(width: 12),
                                         Expanded(child: _buildMetricCard(context, 'Engagement', '${engagement['avgGaze'] ?? 0}%', PhosphorIconsRegular.eye, AppTheme.tertiary)),
                                       ],
@@ -321,11 +321,11 @@ class ParentDashboardScreen extends ConsumerWidget {
   Color _getRiskColor(String risk) {
     switch (risk.toUpperCase()) {
       case 'ON_TRACK':
-        return AppTheme.success;
+        return AppTheme.responseGotIt;
       case 'AT_RISK':
-        return AppTheme.warning;
+        return AppTheme.responseSomewhat;
       case 'CRITICAL':
-        return AppTheme.error;
+        return AppTheme.responseLost;
       default:
         return AppTheme.textSecondary;
     }
