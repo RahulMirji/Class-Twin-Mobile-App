@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.twinclassroom.app"
     compileSdk = 36
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "30.0.14904198"
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true

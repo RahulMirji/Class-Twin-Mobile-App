@@ -18,6 +18,8 @@ import 'hand_raise_modal.dart';
 import 'widgets/confidence_slider.dart';
 import '../../../../core/providers/system_monitor_provider.dart';
 import '../../../../core/providers/locale_provider.dart';
+import '../providers/translation_provider.dart';
+import 'widgets/live_caption_overlay.dart';
 
 /// StreamScreen — Primary screen for remote students
 /// Shows live class feed with question response overlay
@@ -120,11 +122,17 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
           final s = ref.read(currentStudentProvider);
           return {
             'device_orientation': MediaQuery.of(context).orientation.name,
-            'network_quality': 'good', // Placeholder for actual network status
-            'confidence_slider': s?.manualConfidence ?? 50, // latest synced slider value
+            'network_quality': 'good',
+            'confidence_slider': s?.manualConfidence ?? 50,
           };
         },
       );
+
+      // Start live translation listener
+      final translationService = ref.read(translationServiceProvider);
+      final preferredLang = ref.read(localeProvider);
+      translationService.setLanguage(preferredLang);
+      translationService.subscribe(sessionId);
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -147,6 +155,11 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
     } catch (_) {
       // ref might already be disposed, ignore
     }
+    
+    // Stop translation service
+    try {
+      ref.read(translationServiceProvider).unsubscribe();
+    } catch (_) {}
     
     super.dispose();
   }
@@ -271,6 +284,17 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
               right: 16,
               child: _buildSubmittedChip(streaming!.submittedResponse!, tr),
             ),
+
+          // ─── Live Translation Captions ──────────────
+          Positioned(
+            bottom: 64 + MediaQuery.of(context).padding.bottom + (hasSubmitted ? 70 : (hasQuestion && !hasSubmitted ? 320 : 16)),
+            left: 0,
+            right: 0,
+            child: LiveCaptionOverlay(
+              translationService: ref.read(translationServiceProvider),
+              preferredLanguage: ref.watch(localeProvider),
+            ),
+          ),
 
           // ─── System Banners (Battery / Connection) ───
           Positioned(
@@ -687,11 +711,28 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
             onTap: () => _showChat(context),
           ),
 
+          const SizedBox(width: 16),
+
+          // Translation TTS Toggle
+          _ControlButton(
+            icon: PhosphorIconsBold.translate,
+            label: 'TTS',
+            onTap: () {
+              ref.read(translationServiceProvider).toggleTts();
+              setState(() {}); // Refresh button color
+            },
+            color: ref.read(translationServiceProvider).ttsEnabled
+                ? AppTheme.primary
+                : AppTheme.textPrimary,
+          ),
+
           const Spacer(),
 
           // Leave
           TextButton(
             onPressed: () {
+              // Stop translation
+              ref.read(translationServiceProvider).unsubscribe();
               // Disconnect from LiveKit
               ref.read(streamServiceProvider).disconnect();
               ref.read(sessionStateProvider.notifier).leaveSession();

@@ -36,6 +36,7 @@ dependencies:
   uuid: ^4.5.1
   connectivity_plus: ^6.1.4
   intl: ^0.19.0
+  flutter_tts: ^4.2.0
   
   # Error Tracking & Monitoring
   sentry_flutter: any
