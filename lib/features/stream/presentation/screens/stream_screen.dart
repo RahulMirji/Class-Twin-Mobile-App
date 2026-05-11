@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:developer' as dev;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -130,7 +132,27 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
 
       // Start live translation listener
       final translationService = ref.read(translationServiceProvider);
-      final preferredLang = ref.read(localeProvider);
+
+      // Fetch the student's actual language from DB (SharedPreferences may default to 'en')
+      String preferredLang = ref.read(localeProvider);
+      try {
+        final currentUser = Supabase.instance.client.auth.currentUser;
+        if (currentUser?.email != null) {
+          final resp = await Supabase.instance.client
+              .from('students')
+              .select('language')
+              .eq('email', currentUser!.email!)
+              .maybeSingle();
+          if (resp != null && resp['language'] != null && resp['language'] != '') {
+            preferredLang = resp['language'];
+            // Sync DB language to local locale so it persists
+            ref.read(localeProvider.notifier).setLocale(preferredLang);
+          }
+        }
+      } catch (e) {
+        dev.log('[Translation] Could not fetch DB language, using local: $preferredLang');
+      }
+
       translationService.setLanguage(preferredLang);
       translationService.subscribe(sessionId);
     } catch (e) {
