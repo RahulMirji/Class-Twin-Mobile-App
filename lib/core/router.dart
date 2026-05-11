@@ -11,6 +11,7 @@ import '../features/session/presentation/providers/session_provider.dart';
 import '../features/session/domain/session_state.dart';
 import '../features/stream/presentation/screens/stream_screen.dart';
 import '../features/home/presentation/screens/dashboard_screen.dart';
+import '../features/chatbot/presentation/screens/ai_chatbot_screen.dart';
 import '../features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
@@ -28,6 +29,7 @@ import '../features/parent/presentation/screens/parent_dashboard_screen.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'home');
 final _shellNavigatorJoinKey = GlobalKey<NavigatorState>(debugLabel: 'join');
+final _shellNavigatorChatbotKey = GlobalKey<NavigatorState>(debugLabel: 'chatbot');
 final _shellNavigatorLeaderboardKey = GlobalKey<NavigatorState>(debugLabel: 'leaderboard');
 final _shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
 
@@ -162,7 +164,18 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Branch 2: Leaderboard
+          // Branch 2: AI Chatbot
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorChatbotKey,
+            routes: [
+              GoRoute(
+                path: '/ask-ai',
+                builder: (context, state) => const AiChatbotScreen(),
+              ),
+            ],
+          ),
+
+          // Branch 3: Leaderboard
           StatefulShellBranch(
             navigatorKey: _shellNavigatorLeaderboardKey,
             routes: [
@@ -173,7 +186,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Branch 3: Profile
+          // Branch 4: Profile
           StatefulShellBranch(
             navigatorKey: _shellNavigatorProfileKey,
             routes: [

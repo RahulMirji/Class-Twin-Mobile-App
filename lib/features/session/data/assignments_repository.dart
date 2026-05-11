@@ -45,4 +45,30 @@ class AssignmentsRepository {
       throw Exception('Failed to submit quiz');
     }
   }
+
+  /// Fetch an AI-generated explanation for a quiz question
+  Future<String?> fetchQuizExplanation({
+    required String question,
+    required String correctOption,
+    required String studentAnswer,
+  }) async {
+    try {
+      final response = await _client.functions.invoke(
+        'ai-quiz-explanation',
+        body: {
+          'question': question,
+          'correctOption': correctOption,
+          'studentAnswer': studentAnswer,
+        },
+      );
+      
+      if (response.status == 200 && response.data != null) {
+        return response.data['explanation'] as String?;
+      }
+      return null;
+    } catch (e) {
+      log('AssignmentsRepo: Error fetching explanation: $e');
+      return null;
+    }
+  }
 }

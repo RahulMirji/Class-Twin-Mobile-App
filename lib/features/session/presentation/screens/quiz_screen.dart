@@ -20,16 +20,51 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   final Map<int, String> _answers = {};
   bool _isSubmitting = false;
 
+  bool _hasCheckedAnswer = false;
+  String? _explanation;
+  bool _isFetchingExplanation = false;
+
   void _onOptionSelected(String option) {
+    if (_hasCheckedAnswer) return;
     setState(() {
       _answers[_currentQuestionIndex] = option;
     });
+  }
+
+  Future<void> _checkAnswer() async {
+    final questions = widget.assignment.quizContent.questions;
+    final currentQuestion = questions[_currentQuestionIndex];
+    final answer = _answers[_currentQuestionIndex];
+    
+    if (answer == null) return;
+
+    setState(() {
+      _hasCheckedAnswer = true;
+      _isFetchingExplanation = true;
+      _explanation = null;
+    });
+
+    final explanation = await ref.read(assignmentsRepositoryProvider).fetchQuizExplanation(
+      question: currentQuestion.text,
+      correctOption: currentQuestion.correctOption,
+      studentAnswer: answer,
+    );
+
+    if (mounted) {
+      setState(() {
+        _explanation = explanation ?? "The correct answer is ${currentQuestion.correctOption}.";
+        _isFetchingExplanation = false;
+      });
+    }
   }
 
   void _nextQuestion(dynamic tr) {
     if (_currentQuestionIndex < widget.assignment.quizContent.questions.length - 1) {
       setState(() {
         _currentQuestionIndex++;
+        _hasCheckedAnswer = false;
+        _explanation = null;
+        _isFetchingExplanation = false;
       });
     } else {
       _submitQuiz(tr);
@@ -157,18 +192,40 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   itemBuilder: (context, index) {
                     final option = currentQuestion.options[index];
                     final isSelected = _answers[_currentQuestionIndex] == option;
+                    final isCorrectOption = option == currentQuestion.correctOption;
+                    
+                    Color bgColor = isSelected ? AppTheme.primaryContainer : AppTheme.surfaceContainerLow;
+                    Color borderColor = isSelected ? AppTheme.primary : AppTheme.surfaceContainerHighest;
+                    Color iconColor = isSelected ? AppTheme.primary : AppTheme.textTertiary;
+                    IconData? iconData = isSelected ? Icons.check : null;
+                    Color iconIconColor = Colors.white;
+
+                    if (_hasCheckedAnswer) {
+                      if (isCorrectOption) {
+                        bgColor = Colors.green.withValues(alpha: 0.1);
+                        borderColor = Colors.green;
+                        iconColor = Colors.green;
+                        iconData = Icons.check;
+                      } else if (isSelected) {
+                        bgColor = Colors.red.withValues(alpha: 0.1);
+                        borderColor = Colors.red;
+                        iconColor = Colors.red;
+                        iconData = Icons.close;
+                      } else {
+                        borderColor = AppTheme.surfaceContainerHighest.withValues(alpha: 0.5);
+                        iconColor = AppTheme.textTertiary.withValues(alpha: 0.5);
+                      }
+                    }
 
                     return GestureDetector(
                       onTap: () => _onOptionSelected(option),
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.primaryContainer : AppTheme.surfaceContainerLow,
+                          color: bgColor,
                           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                          border: Border.all(
-                            color: isSelected ? AppTheme.primary : AppTheme.surfaceContainerHighest,
-                            width: 2,
-                          ),
+                          border: Border.all(color: borderColor, width: 2),
                         ),
                         child: Row(
                           children: [
@@ -177,14 +234,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                               height: 24,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected ? AppTheme.primary : AppTheme.textTertiary,
-                                  width: 2,
-                                ),
-                                color: isSelected ? AppTheme.primary : Colors.transparent,
+                                border: Border.all(color: iconColor, width: 2),
+                                color: (isSelected && !_hasCheckedAnswer) || (_hasCheckedAnswer && (isCorrectOption || isSelected)) ? iconColor : Colors.transparent,
                               ),
-                              child: isSelected
-                                  ? const Icon(Icons.check, size: 16, color: Colors.white)
+                              child: iconData != null && ((isSelected && !_hasCheckedAnswer) || (_hasCheckedAnswer && (isCorrectOption || isSelected)))
+                                  ? Icon(iconData, size: 16, color: iconIconColor)
                                   : null,
                             ),
                             const SizedBox(width: 16),
@@ -192,8 +246,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                               child: Text(
                                 option,
                                 style: AppTheme.bodyLarge.copyWith(
-                                  color: isSelected ? AppTheme.onPrimary : AppTheme.textPrimary,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  color: (_hasCheckedAnswer && (isCorrectOption || isSelected)) ? iconColor : AppTheme.textPrimary,
+                                  fontWeight: (isSelected || (_hasCheckedAnswer && isCorrectOption)) ? FontWeight.bold : FontWeight.normal,
                                 ),
                               ),
                             ),
@@ -204,13 +258,47 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   },
                 ),
               ),
+              if (_hasCheckedAnswer) ...[
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryContainer.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                    border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(PhosphorIconsFill.sparkle, color: AppTheme.primary, size: 20),
+                          const SizedBox(width: 8),
+                          Text('AI Explanation', style: AppTheme.titleMedium.copyWith(color: AppTheme.primary)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      if (_isFetchingExplanation)
+                        const Center(child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(),
+                        ))
+                      else if (_explanation != null)
+                        Text(
+                          _explanation!,
+                          style: AppTheme.bodyLarge,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _answers.containsKey(_currentQuestionIndex) && !_isSubmitting
-                      ? () => _nextQuestion(tr)
+                  onPressed: _answers.containsKey(_currentQuestionIndex) && !_isSubmitting && (!_hasCheckedAnswer || !_isFetchingExplanation)
+                      ? (_hasCheckedAnswer ? () => _nextQuestion(tr) : _checkAnswer)
                       : null,
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusLg)),
@@ -218,7 +306,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   child: _isSubmitting
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
-                          _currentQuestionIndex == questions.length - 1 ? tr.get('submit_quiz') : tr.get('next_question'),
+                          !_hasCheckedAnswer 
+                            ? 'Check Answer' 
+                            : (_currentQuestionIndex == questions.length - 1 ? tr.get('submit_quiz') : tr.get('next_question')),
                         ),
                 ),
               ),
