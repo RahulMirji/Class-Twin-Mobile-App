@@ -28,6 +28,9 @@ class StreamService {
   VideoTrack? _currentCameraTrack;
   VideoTrack? _currentScreenTrack;
   bool _isMicEnabled = false;
+  bool _isRemoteAudioMuted = false;
+
+  bool get isRemoteAudioMuted => _isRemoteAudioMuted;
 
   bool get isConnected =>
       _room?.connectionState == ConnectionState.connected;
@@ -91,6 +94,32 @@ class StreamService {
     _isMicEnabled = !_isMicEnabled;
     await _room!.localParticipant?.setMicrophoneEnabled(_isMicEnabled);
     _micStateController.add(_isMicEnabled);
+  }
+
+  /// Mute all remote audio tracks (for TTS translation mode)
+  void muteRemoteAudio() {
+    if (_room == null) return;
+    _isRemoteAudioMuted = true;
+    for (final participant in _room!.remoteParticipants.values) {
+      for (final pub in participant.audioTrackPublications) {
+        if (pub.track != null) {
+          (pub.track as RemoteAudioTrack).setVolume(0);
+        }
+      }
+    }
+  }
+
+  /// Unmute all remote audio tracks
+  void unmuteRemoteAudio() {
+    if (_room == null) return;
+    _isRemoteAudioMuted = false;
+    for (final participant in _room!.remoteParticipants.values) {
+      for (final pub in participant.audioTrackPublications) {
+        if (pub.track != null) {
+          (pub.track as RemoteAudioTrack).setVolume(1.0);
+        }
+      }
+    }
   }
 
   Future<void> disconnect() async {

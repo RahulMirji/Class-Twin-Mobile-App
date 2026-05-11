@@ -155,6 +155,13 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
 
       translationService.setLanguage(preferredLang);
       translationService.subscribe(sessionId);
+
+      // Mute original teacher audio when TTS translation is active
+      // (student should only hear translated voice, not both)
+      if (preferredLang != 'en' && translationService.ttsEnabled) {
+        streamService.muteRemoteAudio();
+        dev.log('[Translation] Muted original audio — TTS active for $preferredLang');
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -740,7 +747,15 @@ class _StreamScreenState extends ConsumerState<StreamScreen> {
             icon: PhosphorIconsBold.translate,
             label: 'TTS',
             onTap: () {
-              ref.read(translationServiceProvider).toggleTts();
+              final ts = ref.read(translationServiceProvider);
+              ts.toggleTts();
+              // Mute/unmute original audio based on TTS state
+              final streamService = ref.read(streamServiceProvider);
+              if (ts.ttsEnabled && ts.preferredLanguage != 'en') {
+                streamService.muteRemoteAudio();
+              } else {
+                streamService.unmuteRemoteAudio();
+              }
               setState(() {}); // Refresh button color
             },
             color: ref.read(translationServiceProvider).ttsEnabled
