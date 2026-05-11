@@ -100,64 +100,175 @@ class ParentDashboardScreen extends ConsumerWidget {
                       final report = reports[index];
                       final date = report.createdAt.toLocal().toString().split(' ')[0];
                       
+                      final data = report.reportData;
+                      final aiSummary = data['aiSummary']?.toString() ?? 'No summary available.';
+                      final performance = data['performance'] as Map<String, dynamic>? ?? {};
+                      final attendance = data['attendance'] as Map<String, dynamic>? ?? {};
+                      final engagement = data['engagement'] as Map<String, dynamic>? ?? {};
+                      final sessionBreakdown = data['sessionBreakdown'] as List<dynamic>? ?? [];
+
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(20),
+                        margin: const EdgeInsets.only(bottom: 24),
                         decoration: BoxDecoration(
                           color: AppTheme.surfaceContainerLowest,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                           boxShadow: AppTheme.cardShadow,
                           border: Border.all(
                             color: AppTheme.primary.withValues(alpha: 0.1),
                             width: 1,
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  report.studentName,
-                                  style: AppTheme.titleMedium.copyWith(fontWeight: FontWeight.w600),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Header
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryContainer.withValues(alpha: 0.5),
+                                  border: Border(bottom: BorderSide(color: AppTheme.primary.withValues(alpha: 0.1))),
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Text(
-                                    date,
-                                    style: AppTheme.labelMedium.copyWith(color: AppTheme.primary),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Divider(height: 32),
-                            
-                            // Dynamically render the report_data
-                            ...report.reportData.entries.map((entry) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      _formatKey(entry.key),
-                                      style: AppTheme.labelLarge.copyWith(color: AppTheme.textSecondary),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          report.studentName,
+                                          style: AppTheme.titleLarge.copyWith(fontWeight: FontWeight.w700),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          data['studentEmail']?.toString() ?? '',
+                                          style: AppTheme.labelMedium.copyWith(color: AppTheme.textSecondary),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      entry.value.toString(),
-                                      style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.surfaceContainerLowest,
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF1A1A1A).withValues(alpha: 0.05),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          )
+                                        ],
+                                      ),
+                                      child: Text(
+                                        date,
+                                        style: AppTheme.labelMedium.copyWith(color: AppTheme.primary, fontWeight: FontWeight.bold),
+                                      ),
                                     ),
                                   ],
                                 ),
-                              );
-                            }),
-                          ],
+                              ),
+
+                              Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // AI Summary
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.tertiaryContainer.withValues(alpha: 0.5),
+                                        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                                        border: Border.all(color: AppTheme.tertiary.withValues(alpha: 0.2)),
+                                      ),
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Icon(PhosphorIconsFill.sparkle, color: AppTheme.tertiary),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              aiSummary,
+                                              style: AppTheme.bodyMedium.copyWith(height: 1.5, color: AppTheme.textPrimary),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    
+                                    // Key Metrics Grid
+                                    Text(tr.get('key_metrics') ?? 'Key Metrics', style: AppTheme.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(child: _buildMetricCard(context, 'Grade', performance['grade']?.toString() ?? 'N/A', PhosphorIconsRegular.graduationCap, AppTheme.primary)),
+                                        const SizedBox(width: 12),
+                                        Expanded(child: _buildMetricCard(context, 'Attendance', '${attendance['percentage'] ?? 0}%', PhosphorIconsRegular.calendarCheck, AppTheme.responseGotIt)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(child: _buildMetricCard(context, 'Avg Score', '${performance['avgScore'] ?? 0}%', PhosphorIconsRegular.chartLineUp, AppTheme.responseSomewhat)),
+                                        const SizedBox(width: 12),
+                                        Expanded(child: _buildMetricCard(context, 'Engagement', '${engagement['avgGaze'] ?? 0}%', PhosphorIconsRegular.eye, AppTheme.tertiary)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 24),
+
+                                    // Session Breakdown
+                                    if (sessionBreakdown.isNotEmpty) ...[
+                                      Text(tr.get('recent_sessions') ?? 'Recent Sessions', style: AppTheme.titleMedium.copyWith(fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 12),
+                                      ...sessionBreakdown.take(3).map((session) {
+                                        final sessionMap = session as Map<String, dynamic>;
+                                        return Container(
+                                          margin: const EdgeInsets.only(bottom: 8),
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.surfaceContainerLow,
+                                            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                                            border: Border.all(color: AppTheme.outlineVariant),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(sessionMap['topic']?.toString() ?? 'Session', style: AppTheme.labelLarge.copyWith(fontWeight: FontWeight.w600)),
+                                                    const SizedBox(height: 2),
+                                                    Text(sessionMap['mode']?.toString().toUpperCase() ?? 'UNKNOWN', style: AppTheme.labelSmall.copyWith(color: AppTheme.textSecondary)),
+                                                  ],
+                                                ),
+                                              ),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: _getRiskColor(sessionMap['risk']?.toString() ?? '').withValues(alpha: 0.1),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Text(
+                                                  (sessionMap['risk']?.toString() ?? 'UNKNOWN').replaceAll('_', ' '),
+                                                  style: AppTheme.labelSmall.copyWith(
+                                                    color: _getRiskColor(sessionMap['risk']?.toString() ?? ''),
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }),
+                                    ]
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ).animate().fadeIn(delay: Duration(milliseconds: 100 * index)).slideY(begin: 0.1);
                     },
@@ -172,7 +283,51 @@ class ParentDashboardScreen extends ConsumerWidget {
     );
   }
 
-  String _formatKey(String key) {
-    return key.split('_').map((word) => word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : '').join(' ');
+  Widget _buildMetricCard(BuildContext context, String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20, color: color),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTheme.labelMedium.copyWith(color: AppTheme.textSecondary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: AppTheme.titleLarge.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w800),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getRiskColor(String risk) {
+    switch (risk.toUpperCase()) {
+      case 'ON_TRACK':
+        return AppTheme.responseGotIt;
+      case 'AT_RISK':
+        return AppTheme.responseSomewhat;
+      case 'CRITICAL':
+        return AppTheme.responseLost;
+      default:
+        return AppTheme.textSecondary;
+    }
   }
 }

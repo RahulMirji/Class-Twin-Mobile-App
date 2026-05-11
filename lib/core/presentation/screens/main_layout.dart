@@ -54,6 +54,11 @@ class _FloatingPillNav extends ConsumerWidget {
       label: tr.get('nav_notes'),
     ),
     _NavItem(
+      icon: PhosphorIconsRegular.robot,
+      activeIcon: PhosphorIconsFill.robot,
+      label: 'Ask AI',
+    ),
+    _NavItem(
       icon: PhosphorIconsRegular.trophy,
       activeIcon: PhosphorIconsFill.trophy,
       label: tr.get('nav_leaderboard'),
@@ -140,7 +145,7 @@ class _NavButton extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: isActive ? AppTheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(AppTheme.radiusFull),

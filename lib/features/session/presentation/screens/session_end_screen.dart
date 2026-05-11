@@ -8,6 +8,8 @@ import '../../domain/models/session.dart';
 import '../../domain/session_state.dart';
 import '../providers/session_provider.dart';
 import '../../../../core/providers/locale_provider.dart';
+import '../providers/peer_recommendation_provider.dart';
+import '../../domain/models/peer_recommendation.dart';
 
 /// SessionEndScreen — Session has ended, show summary
 class SessionEndScreen extends ConsumerWidget {
@@ -132,6 +134,26 @@ class SessionEndScreen extends ConsumerWidget {
                           ),
                         ).animate().fadeIn(delay: 600.ms, duration: 600.ms),
 
+                        const SizedBox(height: 32),
+
+                        // Peer Recommendation Card
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final peerAsync = ref.watch(peerRecommendationProvider(s.id));
+                            return peerAsync.when(
+                              data: (peer) {
+                                if (peer == null) return const SizedBox.shrink();
+                                return _buildPeerRecommendationCard(context, peer, tr)
+                                    .animate()
+                                    .fadeIn(delay: 800.ms, duration: 600.ms)
+                                    .slideY(begin: 0.1, end: 0);
+                              },
+                              loading: () => const Center(child: CircularProgressIndicator()),
+                              error: (err, stack) => const SizedBox.shrink(),
+                            );
+                          },
+                        ),
+
                         const Spacer(flex: 3),
 
                         SizedBox(
@@ -158,4 +180,78 @@ class SessionEndScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _buildPeerRecommendationCard(BuildContext context, PeerRecommendation peer, dynamic tr) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE8F0E8), Color(0xFFDDEBDD)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+        border: Border.all(color: AppTheme.tertiary.withValues(alpha: 0.2)),
+        boxShadow: AppTheme.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.tertiary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                ),
+                child: const Icon(
+                  PhosphorIconsFill.usersThree,
+                  color: AppTheme.tertiary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Peer Study Buddy',
+                  style: AppTheme.titleMedium.copyWith(color: AppTheme.tertiary, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Struggling with this topic? ${peer.studentName} did really well and also speaks ${peer.language}. Reach out to them!',
+            style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Opening chat with ${peer.studentName}... (Coming Soon)'),
+                    backgroundColor: AppTheme.tertiary,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              icon: const Icon(PhosphorIconsRegular.chatCircleDots, size: 20),
+              label: Text('Message ${peer.studentName}'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.tertiary,
+                foregroundColor: AppTheme.onTertiary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusLg)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

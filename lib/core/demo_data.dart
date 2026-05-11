@@ -12,7 +12,7 @@ class DemoData {
     id: 'demo-session-001',
     joinCode: 'DEMO01',
     topic: 'Introduction to Neural Networks',
-    subject: 'Machine Learning',
+    subject: 'Computer Science',
     totalRounds: 5,
     currentRound: 2,
     status: SessionStatus.active,
