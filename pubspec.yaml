@@ -37,6 +37,8 @@ dependencies:
   connectivity_plus: ^6.1.4
   intl: ^0.19.0
   flutter_tts: ^4.2.0
+  audioplayers: ^6.1.0
+  path_provider: ^2.1.5
   
   # Error Tracking & Monitoring
   sentry_flutter: any
