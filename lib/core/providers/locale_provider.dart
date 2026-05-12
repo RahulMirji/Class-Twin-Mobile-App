@@ -19,19 +19,36 @@ class LocaleNotifier extends StateNotifier<String> {
     final currentUser = Supabase.instance.client.auth.currentUser;
     if (currentUser != null) {
       final email = currentUser.email;
+      final name = currentUser.userMetadata?['full_name'] as String? ?? 'Student';
       if (email != null) {
         try {
-          await Supabase.instance.client
+          // Try update first
+          final res = await Supabase.instance.client
               .from('students')
               .update({'language': code})
-              .eq('email', email);
-          dev.log('[Locale] Synced language \$code to students table', name: 'LocaleNotifier');
+              .eq('email', email)
+              .select();
+          
+          if (res == null || (res as List).isEmpty) {
+            // No row existed — insert a new one
+            await Supabase.instance.client.from('students').insert({
+              'email': email,
+              'name': name,
+              'language': code,
+              'auth_id': currentUser.id,
+              'role': 'student',
+            });
+            dev.log('[Locale] Inserted new student row with language $code', name: 'LocaleNotifier');
+          } else {
+            dev.log('[Locale] Synced language $code to students table', name: 'LocaleNotifier');
+          }
         } catch (e) {
-          dev.log('[Locale] Failed to sync language to database: \$e', name: 'LocaleNotifier');
+          dev.log('[Locale] Failed to sync language to database: $e', name: 'LocaleNotifier');
         }
       }
     }
   }
+
 }
 
 final localeProvider = StateNotifierProvider<LocaleNotifier, String>((ref) {

@@ -95,6 +95,7 @@ class TranslationService {
       _isSpeaking = false;
       _processQueue();
     });
+    
 
     _tts.setErrorHandler((msg) {
       dev.log('[TTS] Error: $msg', name: 'TranslationService');
