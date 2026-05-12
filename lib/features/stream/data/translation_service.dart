@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:developer' as dev;
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -36,19 +35,16 @@ class LiveTranslation {
   factory LiveTranslation.fromJson(Map<String, dynamic> json) {
     final rawTranslations = json['translations'];
     final Map<String, String> parsed = {};
+    final Map<String, String> audioMap = {};
+
     if (rawTranslations is Map) {
       rawTranslations.forEach((key, value) {
-        parsed[key.toString()] = value.toString();
-      });
-    }
-
-    // Parse audio map (base64 MP3 per language)
-    final rawAudio = json['audio'];
-    final Map<String, String> audioMap = {};
-    if (rawAudio is Map) {
-      rawAudio.forEach((key, value) {
-        if (value != null && value.toString().isNotEmpty) {
-          audioMap[key.toString()] = value.toString();
+        final k = key.toString();
+        if (k.startsWith('audio_') && value != null && value.toString().isNotEmpty) {
+          // Extract audio: "audio_kn" → audio for "kn"
+          audioMap[k.substring(6)] = value.toString();
+        } else {
+          parsed[k] = value.toString();
         }
       });
     }
@@ -224,14 +220,14 @@ class TranslationService {
     }
   }
 
-  /// Play base64-encoded MP3 audio
+  /// Play base64-encoded WAV audio (from Gemini Neural TTS)
   Future<void> _playBase64Audio(String base64Data) async {
     try {
       final bytes = base64Decode(base64Data);
       
       // Write to temp file for audioplayers
       final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/neural_tts_${DateTime.now().millisecondsSinceEpoch}.mp3');
+      final tempFile = File('${tempDir.path}/neural_tts_${DateTime.now().millisecondsSinceEpoch}.wav');
       await tempFile.writeAsBytes(bytes);
 
       await _audioPlayer.play(DeviceFileSource(tempFile.path));
